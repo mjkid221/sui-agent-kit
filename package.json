@@ -4,7 +4,11 @@
   "description": "Agent Kit for Multi-Agent Interactions on Sui",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
