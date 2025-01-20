@@ -6,7 +6,7 @@ export const requestResolveDomain = async (
 ) => {
   try {
     const nameRecord = await agent.suinsClient.getNameRecord(domain);
-    return nameRecord?.targetAddress;
+    return nameRecord?.targetAddress || null;
   } catch (err: any) {
     throw new Error(`Register domain failed: ${err.message}`);
   }

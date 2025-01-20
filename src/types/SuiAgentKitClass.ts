@@ -1,7 +1,25 @@
 import { BaseAgentKitClass } from "./BaseAgentKitClass";
 import { TokenCreationInterface } from "../tools/sui/requestDeployCoin/types";
 
+export type AgentConfig = {
+  /**
+   * The fixed fee for deploying a coin. E.g. 1_000_000_000 for 1 SUI
+   */
+  coinDeployFixedFee?: number;
+
+  /**
+   * The percentage fee for each trade. E.g. 10_000 for 1% = 1 / 100 * 1e6
+   */
+  tradeCommissionFeeBps?: number;
+
+  /**
+   * Treasury address for commissions/fees
+   */
+  treasury: string;
+};
+
 export interface SuiAgentKitClass extends BaseAgentKitClass {
+  config: AgentConfig;
   /**
    * @param tokenInfo - The information of the token to be deployed
    * @param tokenInfo.name - The name of the token

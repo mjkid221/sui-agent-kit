@@ -8,7 +8,7 @@ import {
   requestResolveDomain,
   requestTrade,
 } from "../../tools/sui";
-import { SuiAgentKitClass } from "../../types/SuiAgentKitClass";
+import { AgentConfig, SuiAgentKitClass } from "../../types/SuiAgentKitClass";
 import { requestDeployCoin } from "../../tools/sui/requestDeployCoin";
 import { TokenCreationInterface } from "../../tools/sui/requestDeployCoin/types";
 import { SuinsClient } from "@mysten/suins";
@@ -18,15 +18,18 @@ export class SuiAgentKit implements SuiAgentKitClass {
   public client: SuiClient;
   public suinsClient: SuinsClient;
   public agentNetwork: "testnet" | "mainnet";
+  public config: AgentConfig;
 
   constructor({
     ed25519PrivateKey,
     rpcUrl,
     agentNetwork = "mainnet",
+    config,
   }: {
     ed25519PrivateKey: string;
     rpcUrl?: string;
     agentNetwork: "testnet" | "mainnet";
+    config: AgentConfig;
   }) {
     this.client = new SuiClient({
       url: rpcUrl ?? getFullnodeUrl(agentNetwork),
@@ -37,6 +40,7 @@ export class SuiAgentKit implements SuiAgentKitClass {
     });
     this.wallet = Ed25519Keypair.fromSecretKey(ed25519PrivateKey);
     this.agentNetwork = agentNetwork;
+    this.config = config;
   }
 
   async requestFaucetFunds() {
@@ -47,14 +51,8 @@ export class SuiAgentKit implements SuiAgentKitClass {
     return requestCoinBalance(this, coinType, walletAddress);
   }
 
-  async requestDeployCoin(
-    tokenInfo: TokenCreationInterface,
-    feeConfig?: {
-      treasury: string;
-      fee: number;
-    },
-  ) {
-    return requestDeployCoin(this, tokenInfo, feeConfig);
+  async requestDeployCoin(tokenInfo: TokenCreationInterface) {
+    return requestDeployCoin(this, tokenInfo);
   }
 
   async requestTransferCoinOrToken(
@@ -78,10 +76,6 @@ export class SuiAgentKit implements SuiAgentKitClass {
     inputAmount: number,
     inputCoinType?: string,
     slippageBps?: number,
-    commission?: {
-      feePercentage: number;
-      feeRecipient: string;
-    },
   ) {
     return requestTrade(
       this,
@@ -89,7 +83,6 @@ export class SuiAgentKit implements SuiAgentKitClass {
       inputAmount,
       inputCoinType,
       slippageBps,
-      commission,
     );
   }
 }

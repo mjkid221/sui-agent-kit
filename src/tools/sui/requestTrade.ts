@@ -16,21 +16,17 @@ export const requestTrade = async (
   inputAmount: number,
   inputCoinType: string = COMMON_TOKEN_TYPES.USDC,
   slippageBps: number = DEFAULT_OPTIONS.SLIPPAGE_BPS,
-  commission?: {
-    feePercentage: number;
-    feeRecipient: string;
-  },
 ) => {
   const quoter = new AggregatorQuoter(agent.agentNetwork);
   const formattedInputAmount =
     inputAmount * 10 ** (await getCoinDecimals(agent, inputCoinType));
 
-  const feeCommission = commission
+  const feeCommission = agent.config.tradeCommissionFeeBps
     ? new Commission(
-        commission.feeRecipient,
+        agent.config.treasury,
         new Coin(inputCoinType),
         CommissionType.PERCENTAGE,
-        commission.feePercentage.toString(),
+        agent.config.tradeCommissionFeeBps.toString(),
       )
     : undefined;
   const { routes, amountIn, amountOut } = await quoter.getRoutes({
@@ -57,5 +53,6 @@ export const requestTrade = async (
     tx: new Transaction(),
   })) as TransactionResult;
 
-  return tx;
+  console.log(tx);
+  return "";
 };

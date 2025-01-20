@@ -9,19 +9,16 @@ import { getBytecode } from "./coin";
 export const requestDeployCoin = async (
   agent: SuiAgentKit,
   tokenInfo: TokenCreationInterface,
-  // 1 SUI
-  feeConfig?: {
-    treasury: string;
-    fee: number;
-  },
 ) => {
   try {
     await initMoveByteCodeTemplate();
     const tx = new Transaction();
 
-    if (feeConfig) {
-      const [fee] = tx.splitCoins(tx.gas, [String(feeConfig.fee)]);
-      tx.transferObjects([fee], tx.pure.address(feeConfig.treasury));
+    if (agent.config.coinDeployFixedFee) {
+      const [fee] = tx.splitCoins(tx.gas, [
+        String(agent.config.coinDeployFixedFee),
+      ]);
+      tx.transferObjects([fee], tx.pure.address(agent.config.treasury));
     }
 
     const bytecode = await getBytecode({

@@ -11,14 +11,13 @@ export const getCoinDecimals = async (
     return cache.get(coinType) ?? SUI_DECIMALS;
   }
 
-  const decimals =
-    (coinType
-      ? (
-          await agent.client.getCoinMetadata({
-            coinType,
-          })
-        )?.decimals
-      : SUI_DECIMALS) ?? SUI_DECIMALS;
+  const decimals = coinType
+    ? ((
+        await agent.client.getCoinMetadata({
+          coinType,
+        })
+      )?.decimals ?? SUI_DECIMALS)
+    : SUI_DECIMALS;
 
   if (coinType) {
     cache.set(coinType, decimals);
