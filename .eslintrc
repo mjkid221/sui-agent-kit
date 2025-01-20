@@ -19,7 +19,8 @@
     "eqeqeq": ["error", "always"],
     "no-floating-decimal": "error",
     "no-var": "error",
-    "prefer-const": "error"
+    "prefer-const": "error",
+    "@typescript-eslint/ban-ts-comment": "off"
   },
   "env": {
     "browser": true,
