@@ -12,5 +12,5 @@ export const requestCoinBalance = async (
   });
 
   const decimals = await getCoinDecimals(agent, coinType);
-  return Number.parseInt(balance.totalBalance) / Number(decimals);
+  return Number.parseInt(balance.totalBalance) / 10 ** decimals;
 };

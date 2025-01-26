@@ -8,17 +8,21 @@
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "run:test-agent": "tsx test/runAgent.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@flowx-finance/sdk": "^1.9.10",
+    "@langchain/anthropic": "^0.3.12",
     "@langchain/core": "^0.3.29",
+    "@langchain/langgraph": "^0.2.41",
     "@langchain/openai": "^0.3.17",
     "@mysten/sui": "^1.19.0",
-    "@mysten/suins": "^0.4.2",
+    "@mysten/suins": "0.6.3",
+    "@pythnetwork/pyth-sui-js": "^2.1.0",
     "@suilend/sdk": "^1.1.30",
     "@tradeport/sui-trading-sdk": "^0.1.101",
     "@types/chai": "^5.0.1",

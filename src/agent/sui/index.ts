@@ -7,11 +7,11 @@ import {
   requestRegisterDomain,
   requestResolveDomain,
   requestTrade,
+  SuinsClient,
 } from "../../tools/sui";
 import { AgentConfig, SuiAgentKitClass } from "../../types/SuiAgentKitClass";
 import { requestDeployCoin } from "../../tools/sui/requestDeployCoin";
 import { TokenCreationInterface } from "../../tools/sui/requestDeployCoin/types";
-import { SuinsClient } from "@mysten/suins";
 
 export class SuiAgentKit implements SuiAgentKitClass {
   public wallet: Ed25519Keypair;

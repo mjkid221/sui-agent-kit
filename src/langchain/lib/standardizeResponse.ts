@@ -1,4 +1,4 @@
-export const returnSuccessResponse = (response: object) => {
+export const returnSuccessResponse = <T>(response: T) => {
   return JSON.stringify({
     status: "success",
     ...response,

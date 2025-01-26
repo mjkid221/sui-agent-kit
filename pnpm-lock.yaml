@@ -11,9 +11,15 @@ importers:
       '@flowx-finance/sdk':
         specifier: ^1.9.10
         version: 1.9.10(graphql@16.10.0)(typescript@5.7.3)
+      '@langchain/anthropic':
+        specifier: ^0.3.12
+        version: 0.3.12(@langchain/core@0.3.29(openai@4.78.1(zod@3.24.1)))
       '@langchain/core':
         specifier: ^0.3.29
         version: 0.3.29(openai@4.78.1(zod@3.24.1))
+      '@langchain/langgraph':
+        specifier: ^0.2.41
+        version: 0.2.41(@langchain/core@0.3.29(openai@4.78.1(zod@3.24.1)))
       '@langchain/openai':
         specifier: ^0.3.17
         version: 0.3.17(@langchain/core@0.3.29(openai@4.78.1(zod@3.24.1)))
@@ -21,8 +27,11 @@ importers:
         specifier: ^1.19.0
         version: 1.19.0(typescript@5.7.3)
       '@mysten/suins':
-        specifier: ^0.4.2
-        version: 0.4.2(typescript@5.7.3)
+        specifier: 0.6.3
+        version: 0.6.3(typescript@5.7.3)
+      '@pythnetwork/pyth-sui-js':
+        specifier: ^2.1.0
+        version: 2.1.0(typescript@5.7.3)
       '@suilend/sdk':
         specifier: ^1.1.30
         version: 1.1.30(typescript@5.7.3)
@@ -49,7 +58,7 @@ importers:
         version: 9.1.7
       langchain:
         specifier: ^0.3.11
-        version: 0.3.11(@langchain/core@0.3.29(openai@4.78.1(zod@3.24.1)))(axios@1.7.9)(openai@4.78.1(zod@3.24.1))
+        version: 0.3.11(@langchain/anthropic@0.3.12(@langchain/core@0.3.29(openai@4.78.1(zod@3.24.1))))(@langchain/core@0.3.29(openai@4.78.1(zod@3.24.1)))(axios@1.7.9)(openai@4.78.1(zod@3.24.1))
       lint-staged:
         specifier: ^15.3.0
         version: 15.3.0
@@ -103,6 +112,9 @@ packages:
     peerDependencies:
       graphql: ^15.5.0 || ^16.0.0 || ^17.0.0
       typescript: ^5.0.0
+
+  '@anthropic-ai/sdk@0.32.1':
+    resolution: {integrity: sha512-U9JwTrDvdQ9iWuABVsMLj8nJVwAyQz6QXvgLsVhryhCEPkLsbcP/MXxm+jYcAwLoV8ESbaTTjnD4kuAFa+Hyjg==}
 
   '@babel/runtime@7.26.0':
     resolution: {integrity: sha512-FDSOghenHTiToteC/QRlv2q3DhPZ/oOXTBoirfWNx1Cx3TMVcGWQtMMmQcSvb/JjpNeGzx8Pq/b4fKEJuWm1sw==}
@@ -328,9 +340,30 @@ packages:
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
 
+  '@langchain/anthropic@0.3.12':
+    resolution: {integrity: sha512-vYANJVeus+v8wieTST5GUGlennY87NMIjaFx6JCJN8MMtf2KVwyBWQAUAPyGwzVQ40tru3w0rK2ruvzYBRcWEg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@langchain/core': '>=0.2.21 <0.4.0'
+
   '@langchain/core@0.3.29':
     resolution: {integrity: sha512-LGjJq/UV43GnEzBpO2NWelIlzsAWoci+FEqofYqDE+F6O3EvTrSyma27NXs8eurM8MqWxjeL0t4RCmCSlJs2RQ==}
     engines: {node: '>=18'}
+
+  '@langchain/langgraph-checkpoint@0.0.13':
+    resolution: {integrity: sha512-amdmBcNT8a9xP2VwcEWxqArng4gtRDcnVyVI4DsQIo1Aaz8e8+hH17zSwrUF3pt1pIYztngIfYnBOim31mtKMg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@langchain/core': '>=0.2.31 <0.4.0'
+
+  '@langchain/langgraph-sdk@0.0.36':
+    resolution: {integrity: sha512-KkAZM0uXBaMcD/dpGTBppOhbvNX6gz+Y1zFAC898OblegFkSvICrkd0oRQ5Ro/GWK/NAoDymnMUDXeZDdUkSuw==}
+
+  '@langchain/langgraph@0.2.41':
+    resolution: {integrity: sha512-NeNizWP4k9voEwJxuFtfopF02Lx1isuEsdZKYCN3ueJpOnkVg0iGx8woPBsQpYcrWcySkIt3zOkgtUsrNHqo3g==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@langchain/core': '>=0.2.36 <0.3.0 || >=0.3.9 < 0.4.0'
 
   '@langchain/openai@0.3.17':
     resolution: {integrity: sha512-uw4po32OKptVjq+CYHrumgbfh4NuD7LqyE+ZgqY9I/LrLc6bHLMc+sisHmI17vgek0K/yqtarI0alPJbzrwyag==}
@@ -382,12 +415,16 @@ packages:
     resolution: {integrity: sha512-vL6QrH3l10dTatimPmz/feqMbYfEjvh8MPf3Xwn5tjuwDwBCS0ha1kdN+4vUpu6t0aCFviK+Df/vanORS8cbGQ==}
     engines: {node: '>=18'}
 
+  '@mysten/sui@1.18.1':
+    resolution: {integrity: sha512-ccMVOHM4KQhUvbBirE1rkn9THDJUX7y7W1cDMoCKnlPsIwTtQifZc7ysyBNjCMAS42y8Kq4VpiRagPjf13Am5A==}
+    engines: {node: '>=18'}
+
   '@mysten/sui@1.19.0':
     resolution: {integrity: sha512-hjNCArz7upZaGZNNmMeQRKSlQK73eN+p8MlKJvlZpx/6gorK0WWFWWjEcIyJndkIDbLb06nbQbWIWZ8KoI036Q==}
     engines: {node: '>=18'}
 
-  '@mysten/suins@0.4.2':
-    resolution: {integrity: sha512-7CKlaOxgpvBR2IB7fKhie8m0uzy0uc7DxZDKvURMuIQ4++7dFTkkXO+6+ojgH9WmIiYQ9rx66g34DvkilwV7ug==}
+  '@mysten/suins@0.6.3':
+    resolution: {integrity: sha512-qCd0RTnLCBLLwZV5OVUCKDYIiaVQGn6JsXcJLt2BI0GL9t2K+5VyaXL6BNfxVisEXQ3OxRBS7J+pVwrY/laAZg==}
     engines: {node: '>=16'}
 
   '@noble/curves@1.8.0':
@@ -469,6 +506,9 @@ packages:
 
   '@types/deep-eql@4.0.2':
     resolution: {integrity: sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==}
+
+  '@types/json-schema@7.0.15':
+    resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
   '@types/node-fetch@2.6.12':
     resolution: {integrity: sha512-8nneRWKCg3rMtF69nLQJnOYUcbafYeFSjqkw3jCRLsqkWFlHaoQrr5mXmofFGOx3DKn7UfmBMyov8ySvLRVldA==}
@@ -1015,6 +1055,10 @@ packages:
 
   fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
+
+  fast-xml-parser@4.5.1:
+    resolution: {integrity: sha512-y655CeyUQ+jj7KBbYMc4FG01V8ZQqjN+gDYGJ50RtfsUB8iG9AmwmwoAgeKLJdmueKKMrH1RJ7yXHTSoczdv5w==}
+    hasBin: true
 
   fastq@1.18.0:
     resolution: {integrity: sha512-QKHXPW0hD8g4UET03SdOdunzSouc9N4AuHdsX8XNcTsuz+yYFILVNIX4l9yHABMhiEI9Db0JTTIpu0wB+Y1QQw==}
@@ -1618,6 +1662,9 @@ packages:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
 
+  strnum@1.0.5:
+    resolution: {integrity: sha512-J8bbNyKKXl5qYcR36TIO8W3mVGVHrmmxsd5PAItGkmyzwJvybiw2IVq5nqd0i4LSNSkB/sx9VHllbfFdr9k1JA==}
+
   superstruct@1.0.4:
     resolution: {integrity: sha512-7JpaAoX2NGyoFlI9NBh66BQXGONc+uE+MRS5i2iOBKuS4e+ccgMDjATgZldkah+33DakBxDHiss9kvUcGAO8UQ==}
     engines: {node: '>=14.0.0'}
@@ -1714,6 +1761,10 @@ packages:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
     hasBin: true
 
+  uuid@9.0.1:
+    resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
+    hasBin: true
+
   v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
 
@@ -1795,6 +1846,18 @@ snapshots:
       '@gql.tada/internal': 1.0.8(graphql@16.10.0)(typescript@5.7.3)
       graphql: 16.10.0
       typescript: 5.7.3
+
+  '@anthropic-ai/sdk@0.32.1':
+    dependencies:
+      '@types/node': 18.19.70
+      '@types/node-fetch': 2.6.12
+      abort-controller: 3.0.0
+      agentkeepalive: 4.6.0
+      form-data-encoder: 1.7.2
+      formdata-node: 4.4.1
+      node-fetch: 2.7.0
+    transitivePeerDependencies:
+      - encoding
 
   '@babel/runtime@7.26.0':
     dependencies:
@@ -1960,6 +2023,16 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
+  '@langchain/anthropic@0.3.12(@langchain/core@0.3.29(openai@4.78.1(zod@3.24.1)))':
+    dependencies:
+      '@anthropic-ai/sdk': 0.32.1
+      '@langchain/core': 0.3.29(openai@4.78.1(zod@3.24.1))
+      fast-xml-parser: 4.5.1
+      zod: 3.24.1
+      zod-to-json-schema: 3.24.1(zod@3.24.1)
+    transitivePeerDependencies:
+      - encoding
+
   '@langchain/core@0.3.29(openai@4.78.1(zod@3.24.1))':
     dependencies:
       '@cfworker/json-schema': 4.1.0
@@ -1976,6 +2049,26 @@ snapshots:
       zod-to-json-schema: 3.24.1(zod@3.24.1)
     transitivePeerDependencies:
       - openai
+
+  '@langchain/langgraph-checkpoint@0.0.13(@langchain/core@0.3.29(openai@4.78.1(zod@3.24.1)))':
+    dependencies:
+      '@langchain/core': 0.3.29(openai@4.78.1(zod@3.24.1))
+      uuid: 10.0.0
+
+  '@langchain/langgraph-sdk@0.0.36':
+    dependencies:
+      '@types/json-schema': 7.0.15
+      p-queue: 6.6.2
+      p-retry: 4.6.2
+      uuid: 9.0.1
+
+  '@langchain/langgraph@0.2.41(@langchain/core@0.3.29(openai@4.78.1(zod@3.24.1)))':
+    dependencies:
+      '@langchain/core': 0.3.29(openai@4.78.1(zod@3.24.1))
+      '@langchain/langgraph-checkpoint': 0.0.13(@langchain/core@0.3.29(openai@4.78.1(zod@3.24.1)))
+      '@langchain/langgraph-sdk': 0.0.36
+      uuid: 10.0.0
+      zod: 3.24.1
 
   '@langchain/openai@0.3.17(@langchain/core@0.3.29(openai@4.78.1(zod@3.24.1)))':
     dependencies:
@@ -2079,6 +2172,27 @@ snapshots:
       - '@gql.tada/vue-support'
       - typescript
 
+  '@mysten/sui@1.18.1(typescript@5.7.3)':
+    dependencies:
+      '@graphql-typed-document-node/core': 3.2.0(graphql@16.10.0)
+      '@mysten/bcs': 1.2.1
+      '@noble/curves': 1.8.0
+      '@noble/hashes': 1.7.0
+      '@scure/bip32': 1.6.1
+      '@scure/bip39': 1.5.1
+      '@simplewebauthn/typescript-types': 7.4.0
+      '@suchipi/femver': 1.0.0
+      bech32: 2.0.0
+      gql.tada: 1.8.10(graphql@16.10.0)(typescript@5.7.3)
+      graphql: 16.10.0
+      jose: 5.9.6
+      poseidon-lite: 0.2.1
+      valibot: 0.36.0
+    transitivePeerDependencies:
+      - '@gql.tada/svelte-support'
+      - '@gql.tada/vue-support'
+      - typescript
+
   '@mysten/sui@1.19.0(typescript@5.7.3)':
     dependencies:
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.10.0)
@@ -2100,13 +2214,17 @@ snapshots:
       - '@gql.tada/vue-support'
       - typescript
 
-  '@mysten/suins@0.4.2(typescript@5.7.3)':
+  '@mysten/suins@0.6.3(typescript@5.7.3)':
     dependencies:
-      '@mysten/sui': 1.19.0(typescript@5.7.3)
+      '@mysten/sui': 1.18.1(typescript@5.7.3)
+      '@pythnetwork/pyth-sui-js': 2.1.0(typescript@5.7.3)
     transitivePeerDependencies:
       - '@gql.tada/svelte-support'
       - '@gql.tada/vue-support'
+      - bufferutil
+      - debug
       - typescript
+      - utf-8-validate
 
   '@noble/curves@1.8.0':
     dependencies:
@@ -2228,6 +2346,8 @@ snapshots:
       '@types/deep-eql': 4.0.2
 
   '@types/deep-eql@4.0.2': {}
+
+  '@types/json-schema@7.0.15': {}
 
   '@types/node-fetch@2.6.12':
     dependencies:
@@ -2857,6 +2977,10 @@ snapshots:
 
   fast-levenshtein@2.0.6: {}
 
+  fast-xml-parser@4.5.1:
+    dependencies:
+      strnum: 1.0.5
+
   fastq@1.18.0:
     dependencies:
       reusify: 1.0.4
@@ -3049,7 +3173,7 @@ snapshots:
     dependencies:
       json-buffer: 3.0.1
 
-  langchain@0.3.11(@langchain/core@0.3.29(openai@4.78.1(zod@3.24.1)))(axios@1.7.9)(openai@4.78.1(zod@3.24.1)):
+  langchain@0.3.11(@langchain/anthropic@0.3.12(@langchain/core@0.3.29(openai@4.78.1(zod@3.24.1))))(@langchain/core@0.3.29(openai@4.78.1(zod@3.24.1)))(axios@1.7.9)(openai@4.78.1(zod@3.24.1)):
     dependencies:
       '@langchain/core': 0.3.29(openai@4.78.1(zod@3.24.1))
       '@langchain/openai': 0.3.17(@langchain/core@0.3.29(openai@4.78.1(zod@3.24.1)))
@@ -3065,6 +3189,7 @@ snapshots:
       zod: 3.24.1
       zod-to-json-schema: 3.24.1(zod@3.24.1)
     optionalDependencies:
+      '@langchain/anthropic': 0.3.12(@langchain/core@0.3.29(openai@4.78.1(zod@3.24.1)))
       axios: 1.7.9
     transitivePeerDependencies:
       - encoding
@@ -3362,6 +3487,8 @@ snapshots:
 
   strip-json-comments@3.1.1: {}
 
+  strnum@1.0.5: {}
+
   superstruct@1.0.4: {}
 
   supports-color@7.2.0:
@@ -3443,6 +3570,8 @@ snapshots:
   uuid@11.0.5: {}
 
   uuid@8.3.2: {}
+
+  uuid@9.0.1: {}
 
   v8-compile-cache-lib@3.0.1: {}
 
