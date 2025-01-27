@@ -4,6 +4,7 @@
   "description": "Agent Kit for Multi-Agent Interactions on Sui",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",

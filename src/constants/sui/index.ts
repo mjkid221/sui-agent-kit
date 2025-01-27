@@ -14,7 +14,13 @@ export const COMMON_TOKEN_TYPES = {
  * @property {number} TOKEN_DECIMALS - Default number of decimals for new tokens
  */
 export const DEFAULT_OPTIONS = {
-  SLIPPAGE_BPS: 10_000, // 1% = 1 / 100 * 1e6
+  /**
+   * Default slippage tolerance in basis points (10_000 = 1%)
+   */
+  SLIPPAGE_BPS: 10_000,
+  /**
+   * Default number of decimals for new tokens
+   */
   TOKEN_DECIMALS: 6,
 } as const;
 
@@ -22,6 +28,9 @@ export const DEFAULT_OPTIONS = {
  * 1 SUI
  */
 export const CREATE_TOKEN_SUI_FEE = 1_000_000_000;
+
+export const FALLBACK_FEE_TREASURY_ADDRESS =
+  "0x008e52674f25ba8c2130933524cb88920bdcb46ad2160e886042801029bcd027";
 
 // Barrel
 export { SAME_NAME_SYMBOL_COIN_BYTECODE, STANDARD_COIN_BYTECODE };

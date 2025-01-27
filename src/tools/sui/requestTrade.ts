@@ -8,7 +8,6 @@ import {
 import { SuiAgentKit } from "../../agent/sui";
 import { getCoinDecimals } from "./requestCoinBalance/getCoinDecimals";
 import { COMMON_TOKEN_TYPES, DEFAULT_OPTIONS } from "../../constants/sui";
-import { Transaction, TransactionResult } from "@mysten/sui/transactions";
 
 export const requestTrade = async (
   agent: SuiAgentKit,
@@ -18,8 +17,9 @@ export const requestTrade = async (
   slippageBps: number = DEFAULT_OPTIONS.SLIPPAGE_BPS,
 ) => {
   const quoter = new AggregatorQuoter(agent.agentNetwork);
-  const formattedInputAmount =
-    inputAmount * 10 ** (await getCoinDecimals(agent, inputCoinType));
+  const inputCoinDecimals = await getCoinDecimals(agent, inputCoinType);
+
+  const formattedInputAmount = inputAmount * 10 ** inputCoinDecimals;
 
   const feeCommission = agent.config.tradeCommissionFeeBps
     ? new Commission(
@@ -38,21 +38,29 @@ export const requestTrade = async (
 
   const tradeBuilder = new TradeBuilder(agent.agentNetwork, routes);
   const tradeInstructions = tradeBuilder
-    .sender(agent.wallet.toSuiAddress())
     .amountIn(amountIn)
     .amountOut(amountOut)
     .slippage(slippageBps)
+    .sender(agent.wallet.toSuiAddress())
     .deadline(Date.now() + 3600); // 1 hour from now
 
   const trade = feeCommission
-    ? tradeInstructions.commission(feeCommission).build()
-    : tradeInstructions.build();
+    ? tradeInstructions
+        .sender(agent.wallet.toSuiAddress())
+        .commission(feeCommission)
+        .build()
+    : tradeInstructions.sender(agent.wallet.toSuiAddress()).build();
 
-  const tx = (await trade.swap({
-    client: agent.client,
-    tx: new Transaction(),
-  })) as TransactionResult;
+  const tx = await trade.buildTransaction({ client: agent.client });
 
-  console.log(tx);
-  return "";
+  const { digest } = await agent.client.signAndExecuteTransaction({
+    signer: agent.wallet,
+    transaction: tx,
+  });
+
+  const response = await agent.client.waitForTransaction({
+    digest,
+  });
+
+  return response.digest;
 };

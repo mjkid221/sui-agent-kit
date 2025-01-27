@@ -9,8 +9,9 @@ export class SuiBalanceTool extends Tool {
   name = "sui_balance";
   description = `Get the balance of a Sui wallet. 
     If you want to get the native token balance of your (personal) wallet, you don't need to provide the coinType nor walletAddress.
-    If no coinType is provided, the balance will always be in SUI, otherwise return the balance of the specified coin. 
-    Providing a walletAddress will return the balance of the specified walletAddress.
+    If you are prompted to get a coin balance but you do not know the exact coinType address prompt the user for it, do not make assumptions.
+    Not specifying a coinType will return the balance of the native token (SUI).
+    Providing a walletAddress will return the balance for the specified walletAddress.
 
     Inputs ( input is a JSON string ):
     coinType: string, eg "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC" (optional)
@@ -21,6 +22,7 @@ export class SuiBalanceTool extends Tool {
   }
 
   protected async _call(input: string): Promise<string> {
+    console.log("input---", input);
     try {
       const { walletAddress, coinType } = input
         ? JSON.parse(input)

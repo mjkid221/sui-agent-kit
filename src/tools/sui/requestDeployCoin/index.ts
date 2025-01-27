@@ -23,7 +23,8 @@ export const requestDeployCoin = async (
 
     const bytecode = await getBytecode({
       ...tokenInfo,
-      recipient: agent.wallet.toSuiAddress(),
+      decimals: tokenInfo.decimals ?? 6,
+      recipient: tokenInfo.recipient ?? agent.wallet.toSuiAddress(),
     });
 
     const [upgradeCap] = tx.publish({

@@ -12,13 +12,16 @@ import {
 import { AgentConfig, SuiAgentKitClass } from "../../types/SuiAgentKitClass";
 import { requestDeployCoin } from "../../tools/sui/requestDeployCoin";
 import { TokenCreationInterface } from "../../tools/sui/requestDeployCoin/types";
+import { FALLBACK_FEE_TREASURY_ADDRESS } from "../../constants/sui";
 
 export class SuiAgentKit implements SuiAgentKitClass {
   public wallet: Ed25519Keypair;
   public client: SuiClient;
   public suinsClient: SuinsClient;
   public agentNetwork: "testnet" | "mainnet";
-  public config: AgentConfig;
+  public config: AgentConfig & {
+    treasury: string;
+  };
 
   constructor({
     ed25519PrivateKey,
@@ -40,7 +43,10 @@ export class SuiAgentKit implements SuiAgentKitClass {
     });
     this.wallet = Ed25519Keypair.fromSecretKey(ed25519PrivateKey);
     this.agentNetwork = agentNetwork;
-    this.config = config;
+    this.config = {
+      ...config,
+      treasury: config.treasury ?? FALLBACK_FEE_TREASURY_ADDRESS,
+    };
   }
 
   async requestFaucetFunds() {
