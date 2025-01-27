@@ -3,14 +3,14 @@ import { BaseAgentKitClass } from "./BaseAgentKitClass";
 
 export type SuiAgentConfig = {
   /**
-   * The fixed fee for deploying a coin. E.g. 1_000_000_000 for 1 SUI
+   * The fixed fee for deploying a coin. E.g. 0.5 for 0.5 SUI
    */
   coinDeployFixedFee?: number;
 
   /**
-   * The percentage fee for each trade. E.g. 10_000 for 1% = 1 / 100 * 1e6
+   * The percentage fee for each trade. E.g. 1 for 1%
    */
-  tradeCommissionFeeBps?: number;
+  tradeCommissionFeePercentage?: number;
 
   /**
    * Treasury address for commissions/fees

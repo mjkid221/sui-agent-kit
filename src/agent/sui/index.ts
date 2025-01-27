@@ -43,6 +43,7 @@ export class SuiAgentKit implements SuiAgentKitClass {
     });
     this.wallet = Ed25519Keypair.fromSecretKey(ed25519PrivateKey);
     this.agentNetwork = agentNetwork;
+
     this.config = {
       ...config,
       treasury: config.treasury ?? FALLBACK_FEE_TREASURY_ADDRESS,
@@ -90,5 +91,41 @@ export class SuiAgentKit implements SuiAgentKitClass {
       inputCoinType,
       slippageBps,
     );
+  }
+
+  async requestCreateLiquidityPoolCetus() {
+    // TODO: Implement
+  }
+
+  async requestGetAllPoolPositionsCetus() {
+    // TODO: Implement
+  }
+
+  async requestClosePoolPositionCetus() {
+    // TODO: Implement
+  }
+
+  async requestSendAirdrop() {
+    // TODO: Implement
+  }
+
+  async requestLaunchHopFun() {
+    // TODO: Implement
+  }
+
+  async requestTokenDataByCoinType() {
+    // TODO: Implement
+  }
+
+  async requestTokenDataByTicker() {
+    // TODO: Implement
+  }
+
+  async requestGetTokenPrice() {
+    // TODO: Implement
+  }
+
+  async requestLendAssets() {
+    // TODO: Implement
   }
 }

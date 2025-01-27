@@ -20,13 +20,13 @@ export const requestTrade = async (
   const inputCoinDecimals = await getCoinDecimals(agent, inputCoinType);
 
   const formattedInputAmount = inputAmount * 10 ** inputCoinDecimals;
-
-  const feeCommission = agent.config.tradeCommissionFeeBps
+  const feeCommission = agent.config.tradeCommissionFeePercentage
     ? new Commission(
         agent.config.treasury,
         new Coin(inputCoinType),
         CommissionType.PERCENTAGE,
-        agent.config.tradeCommissionFeeBps.toString(),
+        // Convert percentage to bps for FlowX
+        (agent.config.tradeCommissionFeePercentage * 10_000).toString(),
       )
     : undefined;
   const { routes, amountIn, amountOut } = await quoter.getRoutes({

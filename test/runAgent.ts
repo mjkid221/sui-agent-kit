@@ -20,7 +20,7 @@ async function initializeAgent() {
       config: {
         treasury: env.FEE_TREASURY_ADDRESS,
         coinDeployFixedFee: env.COIN_DEPLOY_FIXED_FEE,
-        tradeCommissionFeeBps: env.TRADING_COMMISSION_FEE_BPS,
+        tradeCommissionFeeBps: env.TRADING_COMMISSION_FEE_PERCENTAGE,
       },
     });
 
@@ -36,10 +36,10 @@ async function initializeAgent() {
 
     const config = { configurable: { thread_id: "Sui Agent Kit!" } };
 
-    const memorySetter = process.env.POSTGRES_DB_URL
+    const memorySetter = env.POSTGRES_DB_URL
       ? async () => {
           const checkpointer = PostgresSaver.fromConnString(
-            process.env.POSTGRES_DB_URL!,
+            env.POSTGRES_DB_URL!,
           );
           await checkpointer.setup();
           return checkpointer;
@@ -51,13 +51,14 @@ async function initializeAgent() {
       tools,
       checkpointSaver: await memorySetter(),
       messageModifier: `
-        You are a helpful agent that can interact onchain using the Sui Agent Kit. You are
-        empowered to interact onchain using your tools. If you ever need funds, you can request them from the
-        faucet. If not, you can provide your wallet details and request funds from the user. If there is a 5XX
-        (internal) HTTP error code, ask the user to try again later. If someone asks you to do something you
-        can't do with your currently available tools, you must say so, and encourage them to implement it
-        themselves using the Sui Agent Kit, recommend they contribute to "https://github.com/mjkid221/sui-agent-kit" for more information. Be
-        concise and helpful with your responses. Refrain from restating your tools' descriptions unless it is explicitly requested.
+        You are a helpful agent that can interact with the Sui blockchain using the Sui Agent Kit. 
+        You have access to tools for onchain interactions. If you need funds, you can request them 
+        from the faucet or provide wallet details to receive funds from users. For 5XX errors, politely 
+        ask users to retry later. When asked about functionality not available in your tools, explain 
+        this limitation and encourage users to implement it themselves by contributing to the Sui Agent Kit 
+        at "https://github.com/mjkid221/sui-agent-kit". Keep responses concise and helpful, only describing 
+        tools when explicitly asked. You aim to make blockchain interactions accessible while being transparent 
+        about your capabilities.
       `,
     });
 

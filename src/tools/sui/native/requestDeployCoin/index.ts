@@ -2,7 +2,7 @@ import { SuiAgentKit } from "@/agent/sui";
 import { Transaction } from "@mysten/sui/transactions";
 
 import { TokenCreationInterface } from "./types";
-import { normalizeSuiAddress } from "@mysten/sui/utils";
+import { normalizeSuiAddress, SUI_DECIMALS } from "@mysten/sui/utils";
 import initMoveByteCodeTemplate from "./move-bytecode-template";
 import { getBytecode } from "./coin";
 
@@ -16,7 +16,7 @@ export const requestDeployCoin = async (
 
     if (agent.config.coinDeployFixedFee) {
       const [fee] = tx.splitCoins(tx.gas, [
-        String(agent.config.coinDeployFixedFee),
+        String(agent.config.coinDeployFixedFee * 10 ** SUI_DECIMALS),
       ]);
       tx.transferObjects([fee], tx.pure.address(agent.config.treasury));
     }
