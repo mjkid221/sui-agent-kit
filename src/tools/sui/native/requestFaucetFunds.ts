@@ -1,5 +1,5 @@
 import { getFaucetHost, requestSuiFromFaucetV0 } from "@mysten/sui/faucet";
-import { SuiAgentKit } from "../../agent/sui";
+import { SuiAgentKit } from "@/agent/sui";
 
 export const requestFaucetFunds = async (
   agent: SuiAgentKit,

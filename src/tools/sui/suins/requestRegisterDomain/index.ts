@@ -1,10 +1,10 @@
-import { SuiAgentKit } from "../../../agent/sui";
+import { SuiAgentKit } from "../../../../agent/sui";
 import { Transaction, TransactionResult } from "@mysten/sui/transactions";
 import { SuinsClient } from "./SuinsClient";
 import { SuinsTransaction } from "./SuinsTransaction";
 import { CoinConfigType } from "./types";
-import { getCoinDecimals } from "../requestCoinBalance/getCoinDecimals";
-import { requestMergeCoins } from "../requestMergeCoins";
+import { getCoinDecimals } from "@/tools/sui/native/requestCoinBalance/getCoinDecimals";
+import { requestMergeCoins } from "@/tools/sui/native/requestMergeCoins";
 import { safeParseDomainName } from "./safeParseDomainName";
 
 // TODO: Update logic when new SUINS SDK is released. This implementation is tested with SUI as payment method.

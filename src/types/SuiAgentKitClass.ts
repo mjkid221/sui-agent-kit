@@ -1,7 +1,7 @@
+import { TokenCreationInterface } from "@/tools/sui/native/requestDeployCoin/types";
 import { BaseAgentKitClass } from "./BaseAgentKitClass";
-import { TokenCreationInterface } from "../tools/sui/requestDeployCoin/types";
 
-export type AgentConfig = {
+export type SuiAgentConfig = {
   /**
    * The fixed fee for deploying a coin. E.g. 1_000_000_000 for 1 SUI
    */
@@ -19,7 +19,7 @@ export type AgentConfig = {
 };
 
 export interface SuiAgentKitClass extends BaseAgentKitClass {
-  config: AgentConfig;
+  config: SuiAgentConfig;
   /**
    * @param tokenInfo - The information of the token to be deployed
    * @param tokenInfo.name - The name of the token

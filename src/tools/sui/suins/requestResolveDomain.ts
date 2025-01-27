@@ -1,5 +1,5 @@
-import { SuiAgentKit } from "../../agent/sui";
-import { safeParseDomainName } from "./requestRegisterDomain";
+import { SuiAgentKit } from "@/agent/sui";
+import { safeParseDomainName } from "@/tools/sui/suins/requestRegisterDomain";
 
 export const requestResolveDomain = async (
   agent: SuiAgentKit,
