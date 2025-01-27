@@ -1,4 +1,4 @@
-import { SuiAgentKit } from "../../../agent/sui";
+import { SuiAgentKit } from "@/agent/sui";
 import { Transaction } from "@mysten/sui/transactions";
 
 import { TokenCreationInterface } from "./types";
@@ -64,3 +64,5 @@ export const requestDeployCoin = async (
     throw new Error(`Token deployment failed: ${error.message}`);
   }
 };
+
+export { TokenCreationInterface };

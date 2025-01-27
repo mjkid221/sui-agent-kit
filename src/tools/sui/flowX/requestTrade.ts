@@ -5,9 +5,9 @@ import {
   CommissionType,
   TradeBuilder,
 } from "@flowx-finance/sdk";
-import { SuiAgentKit } from "../../agent/sui";
-import { getCoinDecimals } from "./requestCoinBalance/getCoinDecimals";
-import { COMMON_TOKEN_TYPES, DEFAULT_OPTIONS } from "../../constants/sui";
+import { SuiAgentKit } from "@/agent/sui";
+import { COMMON_TOKEN_TYPES, DEFAULT_OPTIONS } from "@/constants/sui";
+import { getCoinDecimals } from "@/tools/sui/native/requestCoinBalance/getCoinDecimals";
 
 export const requestTrade = async (
   agent: SuiAgentKit,

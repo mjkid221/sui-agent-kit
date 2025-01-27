@@ -8,18 +8,18 @@ import {
   requestResolveDomain,
   requestTrade,
   SuinsClient,
-} from "../../tools/sui";
-import { AgentConfig, SuiAgentKitClass } from "../../types/SuiAgentKitClass";
-import { requestDeployCoin } from "../../tools/sui/requestDeployCoin";
-import { TokenCreationInterface } from "../../tools/sui/requestDeployCoin/types";
-import { FALLBACK_FEE_TREASURY_ADDRESS } from "../../constants/sui";
+  requestDeployCoin,
+  type TokenCreationInterface,
+} from "@/tools/sui";
+import { SuiAgentConfig, SuiAgentKitClass } from "@/types/SuiAgentKitClass";
+import { FALLBACK_FEE_TREASURY_ADDRESS } from "@/constants/sui";
 
 export class SuiAgentKit implements SuiAgentKitClass {
   public wallet: Ed25519Keypair;
   public client: SuiClient;
   public suinsClient: SuinsClient;
   public agentNetwork: "testnet" | "mainnet";
-  public config: AgentConfig & {
+  public config: SuiAgentConfig & {
     treasury: string;
   };
 
@@ -32,7 +32,7 @@ export class SuiAgentKit implements SuiAgentKitClass {
     ed25519PrivateKey: string;
     rpcUrl?: string;
     agentNetwork: "testnet" | "mainnet";
-    config: AgentConfig;
+    config: SuiAgentConfig;
   }) {
     this.client = new SuiClient({
       url: rpcUrl ?? getFullnodeUrl(agentNetwork),

@@ -1,4 +1,4 @@
-import { SuiAgentKit } from "../../../agent/sui";
+import { SuiAgentKit } from "@/agent/sui";
 import { getCoinDecimals } from "./getCoinDecimals";
 
 export const requestCoinBalance = async (

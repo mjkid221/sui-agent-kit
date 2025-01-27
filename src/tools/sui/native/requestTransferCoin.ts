@@ -1,4 +1,4 @@
-import { SuiAgentKit } from "../../agent/sui";
+import { SuiAgentKit } from "@/agent/sui";
 import { Transaction } from "@mysten/sui/transactions";
 import { getCoinDecimals } from "./requestCoinBalance/getCoinDecimals";
 

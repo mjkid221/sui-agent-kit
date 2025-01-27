@@ -9,7 +9,7 @@ import * as template from "./move-bytecode-template";
 import {
   SAME_NAME_SYMBOL_COIN_BYTECODE,
   STANDARD_COIN_BYTECODE,
-} from "../../../constants/sui";
+} from "@/constants/sui";
 
 const Address = bcs.bytes(32).transform({
   // To change the input type, you need to provide a type definition for the input

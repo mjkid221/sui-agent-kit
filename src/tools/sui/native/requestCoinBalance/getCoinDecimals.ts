@@ -1,5 +1,5 @@
 import { SUI_DECIMALS } from "@mysten/sui/utils";
-import { SuiAgentKit } from "../../../agent/sui";
+import { SuiAgentKit } from "@/agent/sui";
 
 const cache = new Map<string, number>();
 
