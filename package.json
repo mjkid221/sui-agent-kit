@@ -4,6 +4,7 @@
   "description": "Agent Kit for Multi-Agent Interactions on Sui",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
@@ -19,6 +20,7 @@
     "@langchain/anthropic": "^0.3.12",
     "@langchain/core": "^0.3.29",
     "@langchain/langgraph": "^0.2.41",
+    "@langchain/langgraph-checkpoint-postgres": "^0.0.2",
     "@langchain/openai": "^0.3.17",
     "@mysten/sui": "^1.19.0",
     "@mysten/suins": "0.6.3",

@@ -7,7 +7,8 @@ export const TokenCreationSchema = z.object({
   decimals: z.number().optional(),
   imageUrl: z.string().optional(),
   description: z.string(),
-  fixedSupply: z.boolean(),
+  fixedSupply: z.boolean().optional(),
+  recipient: z.string().optional(),
 });
 
 export type TokenCreationInterface = z.infer<typeof TokenCreationSchema>;

@@ -15,7 +15,7 @@ export type AgentConfig = {
   /**
    * Treasury address for commissions/fees
    */
-  treasury: string;
+  treasury?: string;
 };
 
 export interface SuiAgentKitClass extends BaseAgentKitClass {
