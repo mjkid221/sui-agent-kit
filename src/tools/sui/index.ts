@@ -5,3 +5,4 @@ export * from "./requestTransferCoin";
 export * from "./requestRegisterDomain";
 export * from "./requestResolveDomain";
 export * from "./requestTrade";
+export * from "./requestMergeCoins";
