@@ -7,6 +7,7 @@ import * as readline from "readline";
 import { HumanMessage } from "@langchain/core/messages";
 import dotenv from "dotenv";
 import { getEnv } from "./utils/env";
+import { PostgresSaver } from "@langchain/langgraph-checkpoint-postgres";
 
 dotenv.config();
 const env = getEnv();
@@ -33,13 +34,22 @@ async function initializeAgent() {
       apiKey: env.OPENAI_API_KEY,
     });
 
-    const memory = new MemorySaver();
     const config = { configurable: { thread_id: "Sui Agent Kit!" } };
+
+    const memorySetter = process.env.POSTGRES_DB_URL
+      ? async () => {
+          const checkpointer = PostgresSaver.fromConnString(
+            process.env.POSTGRES_DB_URL!,
+          );
+          await checkpointer.setup();
+          return checkpointer;
+        }
+      : async () => new MemorySaver();
 
     const agent = createReactAgent({
       llm,
       tools,
-      checkpointSaver: memory,
+      checkpointSaver: await memorySetter(),
       messageModifier: `
         You are a helpful agent that can interact onchain using the Sui Agent Kit. You are
         empowered to interact onchain using your tools. If you ever need funds, you can request them from the
