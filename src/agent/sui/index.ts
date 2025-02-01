@@ -1,20 +1,32 @@
 import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import {
+  SuinsClient,
   requestFaucetFunds,
   requestCoinBalance,
   requestTransferCoin,
   requestRegisterDomain,
   requestResolveDomain,
   requestTrade,
-  SuinsClient,
   requestDeployCoin,
   type TokenCreationInterface,
 } from "@/tools/sui";
-import { SuiAgentConfig, SuiAgentKitClass } from "@/types/SuiAgentKitClass";
+import { SuiAgentConfig, SuiAgentKitClass } from "@/types/agent";
 import { FALLBACK_FEE_TREASURY_ADDRESS } from "@/constants/sui";
+import { getTokenDataByAddress } from "@/lib/helpers/token/getTokenData";
+import { ChainIdentifier } from "@/types/chain";
 
-export class SuiAgentKit implements SuiAgentKitClass {
+import { BaseCacheStore } from "@/lib/classes/cache";
+import {
+  createTokenDataByAddressCacheKey,
+  createTokenDataByTickerCacheKey,
+  createTokenDecimalsCacheKey,
+} from "@/lib/helpers/cache";
+import { getCoinDecimals } from "@/tools/sui/native/requestCoinBalance/getCoinDecimals";
+import { SUI_TYPE_ARG } from "@mysten/sui/utils";
+import { sec } from "ms-extended";
+
+export class SuiAgentKit extends BaseCacheStore implements SuiAgentKitClass {
   public wallet: Ed25519Keypair;
   public client: SuiClient;
   public suinsClient: SuinsClient;
@@ -34,6 +46,7 @@ export class SuiAgentKit implements SuiAgentKitClass {
     agentNetwork: "testnet" | "mainnet";
     config: SuiAgentConfig;
   }) {
+    super();
     this.client = new SuiClient({
       url: rpcUrl ?? getFullnodeUrl(agentNetwork),
     });
@@ -43,7 +56,6 @@ export class SuiAgentKit implements SuiAgentKitClass {
     });
     this.wallet = Ed25519Keypair.fromSecretKey(ed25519PrivateKey);
     this.agentNetwork = agentNetwork;
-
     this.config = {
       ...config,
       treasury: config.treasury ?? FALLBACK_FEE_TREASURY_ADDRESS,
@@ -56,6 +68,14 @@ export class SuiAgentKit implements SuiAgentKitClass {
 
   async requestGetBalance(coinType?: string, walletAddress?: string) {
     return requestCoinBalance(this, coinType, walletAddress);
+  }
+
+  async requestGetCoinDecimals(coinType?: string) {
+    return this.cache.withCache(
+      createTokenDecimalsCacheKey(coinType ?? SUI_TYPE_ARG),
+      () => getCoinDecimals(this, coinType),
+      sec("5m"),
+    );
   }
 
   async requestDeployCoin(tokenInfo: TokenCreationInterface) {
@@ -93,7 +113,7 @@ export class SuiAgentKit implements SuiAgentKitClass {
     );
   }
 
-  async requestCreateLiquidityPoolCetus() {
+  async requestCreateClmmPoolCetus() {
     // TODO: Implement
   }
 
@@ -113,12 +133,20 @@ export class SuiAgentKit implements SuiAgentKitClass {
     // TODO: Implement
   }
 
-  async requestTokenDataByCoinType() {
-    // TODO: Implement
+  async requestTokenDataByCoinType(coinType: string) {
+    return this.cache.withCache(
+      createTokenDataByAddressCacheKey(coinType, ChainIdentifier.SUI),
+      () => getTokenDataByAddress(coinType, ChainIdentifier.SUI),
+      sec("5m"),
+    );
   }
 
-  async requestTokenDataByTicker() {
-    // TODO: Implement
+  async requestTokenDataByTicker(coinType: string) {
+    return this.cache.withCache(
+      createTokenDataByTickerCacheKey(coinType, ChainIdentifier.SUI),
+      () => getTokenDataByAddress(coinType, ChainIdentifier.SUI),
+      sec("5m"),
+    );
   }
 
   async requestGetTokenPrice() {

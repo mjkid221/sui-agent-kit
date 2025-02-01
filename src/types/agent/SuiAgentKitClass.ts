@@ -1,5 +1,8 @@
 import { TokenCreationInterface } from "@/tools/sui/native/requestDeployCoin/types";
 import { BaseAgentKitClass } from "./BaseAgentKitClass";
+import { SuinsClient } from "@/tools/sui";
+import { SuiClient } from "@mysten/sui/client";
+import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 
 export type SuiAgentConfig = {
   /**
@@ -19,7 +22,12 @@ export type SuiAgentConfig = {
 };
 
 export interface SuiAgentKitClass extends BaseAgentKitClass {
+  wallet: Ed25519Keypair;
+  client: SuiClient;
+  suinsClient: SuinsClient;
+  agentNetwork: "testnet" | "mainnet";
   config: SuiAgentConfig;
+
   /**
    * @param tokenInfo - The information of the token to be deployed
    * @param tokenInfo.name - The name of the token
