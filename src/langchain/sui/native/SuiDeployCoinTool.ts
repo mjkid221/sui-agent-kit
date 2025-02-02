@@ -31,7 +31,6 @@ export class SuiDeployCoinTool extends Tool {
       const coinType = await this.suiAgentKit.requestDeployCoin(parsedInput);
 
       return returnSuccessResponse({
-        status: "success",
         message: "Coin deployed successfully",
         createdCoinAddress: coinType,
         decimals: parsedInput.decimals || 6,

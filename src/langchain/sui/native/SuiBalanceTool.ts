@@ -22,7 +22,6 @@ export class SuiBalanceTool extends Tool {
   }
 
   protected async _call(input: string): Promise<string> {
-    console.log("input---", input);
     try {
       const { walletAddress, coinType } = input
         ? JSON.parse(input)

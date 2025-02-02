@@ -10,3 +10,6 @@ export const createTokenDataByAddressCacheKey = (
   address: string,
   chainId: string,
 ) => `token-data:address:${address}:${chainId}`;
+
+export const createTokenPriceCacheKey = (address: string, chainId: string) =>
+  `token-price:${address}:${chainId}`;

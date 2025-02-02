@@ -3,10 +3,10 @@ import { ChainIdentifier, ChainIdentifierType } from "@/types/chain";
 // Auto-generated from response of dexscreener API
 export interface DexScreenerTokenType {
   schemaVersion: string;
-  pairs: Pair[];
+  pairs: DexScreenerTokenPair[];
 }
 
-interface Pair {
+export interface DexScreenerTokenPair {
   chainId: string;
   dexId: string;
   url: string;

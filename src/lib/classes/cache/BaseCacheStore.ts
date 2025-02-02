@@ -1,6 +1,6 @@
-import { CacheStore } from "./cacheStore";
+import { CacheStore } from "./CacheStore";
 
-export class BaseCacheStore {
+export abstract class BaseCacheStore {
   protected cache: CacheStore;
 
   constructor() {

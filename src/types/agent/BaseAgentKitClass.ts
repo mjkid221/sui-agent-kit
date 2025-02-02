@@ -1,3 +1,6 @@
+import { GoPlusLabsTokenDataResult } from "@/lib/helpers/token/types";
+import { ChainIdentifierType } from "../chain/id";
+
 export interface BaseAgentKitClass {
   /**
    * Request funds from the faucet. Testnet only.
@@ -58,4 +61,29 @@ export interface BaseAgentKitClass {
     inputCoinOrTokenAddress?: string,
     slippageBps?: number,
   ): Promise<string>;
+
+  /**
+   * Get the data of an asset
+   * @param coinType - The address of the asset
+   * @returns The data of the asset
+   */
+  requestAssetDataByCoinType(
+    coinType: string,
+  ): Promise<GoPlusLabsTokenDataResult<ChainIdentifierType>>;
+
+  /**
+   * Get the data of an asset by its ticker
+   * @param ticker - The ticker of the asset
+   * @returns The data of the asset
+   */
+  requestAssetDataByTicker(
+    ticker: string,
+  ): Promise<GoPlusLabsTokenDataResult<ChainIdentifierType>>;
+
+  /**
+   * Get the price of an asset
+   * @param coinType - The address of the asset
+   * @returns The price of the asset
+   */
+  requestGetAssetPrice(coinType: string): Promise<string>;
 }
