@@ -72,7 +72,7 @@ export enum DexScreenerChainId {
   OPTIMISM = "optimism",
 }
 
-interface GoPlusLabsEvmTokenData {
+export interface GoPlusLabsEvmTokenData {
   anti_whale_modifiable: string;
   buy_tax: string;
   can_take_back_ownership: string;
@@ -105,7 +105,7 @@ interface GoPlusLabsEvmTokenData {
   total_supply: string;
 }
 
-interface GoPlusLabsSuiTokenData {
+export interface GoPlusLabsSuiTokenData {
   name: string;
   symbol: string;
   total_supply: string;

@@ -12,6 +12,15 @@ import { PostgresSaver } from "@langchain/langgraph-checkpoint-postgres";
 dotenv.config();
 const env = getEnv();
 
+const agentSetupMessage = `You are helpful agent that can interact with the Sui blockchain using the Sui Agent Kit. 
+        You have access to tools for onchain interactions. If you need funds, you can request them 
+        from the faucet or provide wallet details to receive funds from users. For 5XX errors, politely 
+        ask users to retry later. When asked about functionality not available in your tools, explain 
+        this limitation and encourage users to implement it themselves by contributing to the Sui Agent Kit 
+        at "https://github.com/mjkid221/sui-agent-kit". Keep responses concise and helpful, only describing 
+        tools when explicitly asked. You aim to make blockchain interactions accessible while being transparent 
+        about your capabilities.`;
+
 async function initializeAgent() {
   try {
     const suiAgent = new SuiAgentKit({
@@ -29,12 +38,12 @@ async function initializeAgent() {
 
     // Create an LLM Chain
     const llm = new ChatOpenAI({
-      modelName: "gpt-4o-mini",
+      modelName: "gpt-4o",
       temperature: 0.7,
       apiKey: env.OPENAI_API_KEY,
     });
 
-    const config = { configurable: { thread_id: "Sui Agent Kit!" } };
+    const config = { configurable: { thread_id: "Sui Agent Kit - Test 1" } };
 
     const memorySetter = env.POSTGRES_DB_URL
       ? async () => {
@@ -51,14 +60,7 @@ async function initializeAgent() {
       tools,
       checkpointSaver: await memorySetter(),
       messageModifier: `
-        You are a helpful agent that can interact with the Sui blockchain using the Sui Agent Kit. 
-        You have access to tools for onchain interactions. If you need funds, you can request them 
-        from the faucet or provide wallet details to receive funds from users. For 5XX errors, politely 
-        ask users to retry later. When asked about functionality not available in your tools, explain 
-        this limitation and encourage users to implement it themselves by contributing to the Sui Agent Kit 
-        at "https://github.com/mjkid221/sui-agent-kit". Keep responses concise and helpful, only describing 
-        tools when explicitly asked. You aim to make blockchain interactions accessible while being transparent 
-        about your capabilities.
+        ${agentSetupMessage} ${process.env.PERSONALITY_MODIFIER}
       `,
     });
 

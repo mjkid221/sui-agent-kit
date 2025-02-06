@@ -7,7 +7,7 @@ import { SUI_TYPE_ARG } from "@mysten/sui/utils";
  * Additionally, this function will only merge coins if there are enough coins to merge.
  * @param agent SuiAgentKit - Sui agent class
  * @param transaction Transaction - Transaction object
- * @param requestAmount number - Minimum amount requesting to merge into one
+ * @param requestAmount number - Minimum amount requesting to merge into one. Does not account decimals
  * @param coinType string - Coin type to merge
  */
 export const requestMergeCoins = async (

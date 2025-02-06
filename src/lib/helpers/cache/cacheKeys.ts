@@ -13,3 +13,8 @@ export const createTokenDataByAddressCacheKey = (
 
 export const createTokenPriceCacheKey = (address: string, chainId: string) =>
   `token-price:${address}:${chainId}`;
+
+export const createTokenAddressFromTickerCacheKey = (
+  ticker: string,
+  chainId: string,
+) => `token-address:ticker:${ticker}:${chainId}`;

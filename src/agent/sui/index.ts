@@ -14,13 +14,15 @@ import {
 import { SuiAgentConfig, SuiAgentKitClass } from "@/types/agent";
 import { FALLBACK_FEE_TREASURY_ADDRESS } from "@/constants/sui";
 import {
+  getTokenAddressFromTicker,
   getTokenDataByAddress,
   getTokenDataByTicker,
   getTokenPriceByAddress,
-} from "@/lib/helpers/token/getTokenData";
+} from "@/lib/helpers/token";
 import { ChainIdentifier } from "@/types/chain";
 import { BaseCacheStore } from "@/lib/classes/cache";
 import {
+  createTokenAddressFromTickerCacheKey,
   createTokenDataByAddressCacheKey,
   createTokenDataByTickerCacheKey,
   createTokenDecimalsCacheKey,
@@ -30,6 +32,11 @@ import { getCoinDecimals } from "@/tools/sui/native/requestCoinBalance/getCoinDe
 import { SUI_TYPE_ARG } from "@mysten/sui/utils";
 import { sec } from "ms-extended";
 import CetusClmmSDK, { initCetusSDK } from "@cetusprotocol/cetus-sui-clmm-sdk";
+import {
+  requestCreateClmmPool,
+  requestGetPoolPositions,
+} from "@/tools/sui/cetus";
+import { CETUS_FEE_TIERS } from "@/tools/sui/cetus/fees";
 
 export class SuiAgentKit extends BaseCacheStore implements SuiAgentKitClass {
   public wallet: Ed25519Keypair;
@@ -75,6 +82,10 @@ export class SuiAgentKit extends BaseCacheStore implements SuiAgentKitClass {
 
   async requestFaucetFunds() {
     return requestFaucetFunds(this);
+  }
+
+  async requestAgentWalletAddress() {
+    return this.wallet.toSuiAddress();
   }
 
   async requestGetBalance(coinType?: string, walletAddress?: string) {
@@ -123,30 +134,53 @@ export class SuiAgentKit extends BaseCacheStore implements SuiAgentKitClass {
     );
   }
 
-  async requestCreateClmmPoolCetus() {
-    // TODO: Implement
+  async requestCreateClmmPoolCetus(
+    coinTypeA: string,
+    coinTypeADepositAmount: number,
+    coinTypeB: string,
+    initialPrice: number,
+    feeTier: keyof typeof CETUS_FEE_TIERS,
+    slippage: number = 5, // 5%
+  ) {
+    return requestCreateClmmPool(
+      this,
+      coinTypeA,
+      coinTypeADepositAmount,
+      coinTypeB,
+      initialPrice,
+      feeTier,
+      slippage,
+    );
   }
 
   async requestGetAllPoolPositionsCetus() {
-    // TODO: Implement
+    return requestGetPoolPositions(this);
   }
 
   async requestClosePoolPositionCetus() {
-    // TODO: Implement
+    throw new Error("Not implemented");
   }
 
   async requestSendAirdrop() {
-    // TODO: Implement
+    throw new Error("Not implemented");
   }
 
   async requestLaunchHopFun() {
-    // TODO: Implement
+    throw new Error("Not implemented");
   }
 
   async requestAssetDataByCoinType(coinType: string) {
     return this.cache.withCache(
       createTokenDataByAddressCacheKey(coinType, ChainIdentifier.SUI),
       () => getTokenDataByAddress(coinType, ChainIdentifier.SUI),
+      sec("5m"),
+    );
+  }
+
+  async getAssetAddressFromTicker(ticker: string) {
+    return this.cache.withCache(
+      createTokenAddressFromTickerCacheKey(ticker, ChainIdentifier.SUI),
+      () => getTokenAddressFromTicker(ticker, ChainIdentifier.SUI),
       sec("5m"),
     );
   }
@@ -168,6 +202,6 @@ export class SuiAgentKit extends BaseCacheStore implements SuiAgentKitClass {
   }
 
   async requestLendAssets() {
-    // TODO: Implement
+    throw new Error("Not implemented");
   }
 }
