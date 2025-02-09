@@ -1,2 +1,4 @@
-export * from "./requestCreateClmmPool";
-export * from "./requestGetPoolPositions";
+export * from "./createClmmPool";
+export * from "./getPoolPositions";
+export * from "./CetusPoolManager";
+export * from "./getLiquidityPairInput";

@@ -20,7 +20,7 @@ import {
   getTokenPriceByAddress,
 } from "@/lib/helpers/token";
 import { ChainIdentifier } from "@/types/chain";
-import { BaseCacheStore } from "@/lib/classes/cache";
+import { BaseAgentStore } from "@/lib/classes";
 import {
   createTokenAddressFromTickerCacheKey,
   createTokenDataByAddressCacheKey,
@@ -31,14 +31,10 @@ import {
 import { getCoinDecimals } from "@/tools/sui/native/requestCoinBalance/getCoinDecimals";
 import { SUI_TYPE_ARG } from "@mysten/sui/utils";
 import { sec } from "ms-extended";
-import CetusClmmSDK, { initCetusSDK } from "@cetusprotocol/cetus-sui-clmm-sdk";
-import {
-  requestCreateClmmPool,
-  requestGetPoolPositions,
-} from "@/tools/sui/cetus";
+import { CetusPoolManager } from "@/tools/sui/cetus";
 import { CETUS_FEE_TIERS } from "@/tools/sui/cetus/fees";
 
-export class SuiAgentKit extends BaseCacheStore implements SuiAgentKitClass {
+export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
   public wallet: Ed25519Keypair;
   public client: SuiClient;
   public suinsClient: SuinsClient;
@@ -46,7 +42,7 @@ export class SuiAgentKit extends BaseCacheStore implements SuiAgentKitClass {
   public config: SuiAgentConfig & {
     treasury: string;
   };
-  public cetusSDK: CetusClmmSDK;
+  public cetusPoolManager: CetusPoolManager;
 
   constructor({
     ed25519PrivateKey,
@@ -64,20 +60,19 @@ export class SuiAgentKit extends BaseCacheStore implements SuiAgentKitClass {
     this.client = new SuiClient({
       url: rpc,
     });
-    this.suinsClient = new SuinsClient({
-      client: this.client,
-      network: agentNetwork,
-    });
-    this.cetusSDK = initCetusSDK({
-      network: agentNetwork,
-      fullNodeUrl: rpc,
-    });
     this.wallet = Ed25519Keypair.fromSecretKey(ed25519PrivateKey);
     this.agentNetwork = agentNetwork;
     this.config = {
       ...config,
       treasury: config.treasury ?? FALLBACK_FEE_TREASURY_ADDRESS,
     };
+    // Cetus SDK setup
+    this.cetusPoolManager = new CetusPoolManager(this, agentNetwork, rpc);
+    // Sui NS setup
+    this.suinsClient = new SuinsClient({
+      client: this.client,
+      network: agentNetwork,
+    });
   }
 
   async requestFaucetFunds() {
@@ -142,8 +137,7 @@ export class SuiAgentKit extends BaseCacheStore implements SuiAgentKitClass {
     feeTier: keyof typeof CETUS_FEE_TIERS,
     slippage: number = 5, // 5%
   ) {
-    return requestCreateClmmPool(
-      this,
+    return this.cetusPoolManager.createClmmPool(
       coinTypeA,
       coinTypeADepositAmount,
       coinTypeB,
@@ -154,18 +148,37 @@ export class SuiAgentKit extends BaseCacheStore implements SuiAgentKitClass {
   }
 
   async requestGetAllPoolPositionsCetus() {
-    return requestGetPoolPositions(this);
+    return this.cetusPoolManager.getPoolPositions();
+  }
+
+  async requestOpenPoolPositionCetus(
+    poolId: string,
+    coinTypeA: string,
+    amountA: number,
+    slippagePercentage: number,
+    existingPositionId?: string,
+  ) {
+    return this.cetusPoolManager.openPositionAndAddLiquidity(
+      poolId,
+      coinTypeA,
+      amountA,
+      slippagePercentage,
+      existingPositionId,
+    );
   }
 
   async requestClosePoolPositionCetus() {
-    throw new Error("Not implemented");
+    // TODO: implement
+    return this.cetusPoolManager.closePoolPosition();
   }
 
   async requestSendAirdrop() {
+    // TODO: Implement
     throw new Error("Not implemented");
   }
 
   async requestLaunchHopFun() {
+    // TODO: Implement
     throw new Error("Not implemented");
   }
 

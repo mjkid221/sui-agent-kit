@@ -4,8 +4,9 @@
  * @returns string - Parsed domain name
  */
 export const safeParseDomainName = (name: string) => {
-  if (name.includes(".sui")) {
-    return name;
+  const trimmedName = name.trim();
+  if (trimmedName.includes(".sui")) {
+    return trimmedName;
   }
-  return `${name}.sui`;
+  return `${trimmedName}.sui`;
 };

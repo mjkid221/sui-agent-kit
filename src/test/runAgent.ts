@@ -1,8 +1,8 @@
 import { ChatOpenAI } from "@langchain/openai";
-import { SuiAgentKit } from "../src/agent/sui";
+import { SuiAgentKit } from "../agent/sui";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { MemorySaver } from "@langchain/langgraph";
-import { createSuiTools } from "../src/langchain/sui";
+import { createSuiTools } from "../langchain/sui";
 import * as readline from "readline";
 import { HumanMessage } from "@langchain/core/messages";
 import dotenv from "dotenv";
@@ -29,7 +29,7 @@ async function initializeAgent() {
       config: {
         treasury: env.FEE_TREASURY_ADDRESS,
         coinDeployFixedFee: env.COIN_DEPLOY_FIXED_FEE,
-        tradeCommissionFeeBps: env.TRADING_COMMISSION_FEE_PERCENTAGE,
+        tradeCommissionFeePercentage: env.TRADING_COMMISSION_FEE_PERCENTAGE,
       },
     });
 
