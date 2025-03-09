@@ -1,7 +1,9 @@
 import { BaseCacheStore } from "./cache/BaseCacheStore";
 
+import { CacheStoreConfig } from "./cache/types";
+
 export abstract class BaseAgentStore extends BaseCacheStore {
-  constructor() {
-    super();
+  constructor(cacheStoreConfig?: CacheStoreConfig) {
+    super(cacheStoreConfig);
   }
 }

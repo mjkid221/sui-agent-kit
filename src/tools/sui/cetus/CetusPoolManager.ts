@@ -15,7 +15,7 @@ import {
   createLiquidityPairInputWithExistingPoolCacheKey,
   createLiquidityPairInputWithNewPoolCacheKey,
 } from "@/lib/helpers/cache/sui/cetusCacheKeys";
-import { sec } from "ms-extended";
+import { ms } from "ms-extended";
 import { openPositionAndAddLiquidity } from "./openPositionAndAddLiquidity";
 import {
   LiquidityInputWithExistingPool,
@@ -167,7 +167,7 @@ export class CetusPoolManager extends BaseCacheStore {
           slippagePercentage,
           existingPositionId,
         ),
-      sec("1m"),
+      ms("1m"),
     );
     return {
       key: cacheKey,
@@ -216,7 +216,7 @@ export class CetusPoolManager extends BaseCacheStore {
           feeTier,
           slippagePercentage,
         ),
-      sec("1m"),
+      ms("1m"),
     );
     return {
       key: cacheKey,

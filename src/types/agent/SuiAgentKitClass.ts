@@ -3,6 +3,7 @@ import { BaseAgentKitClass } from "./BaseAgentKitClass";
 import { SuinsClient } from "@/tools/sui";
 import { SuiClient } from "@mysten/sui/client";
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
+import { CacheStoreConfig } from "@/lib/classes/cache/types";
 
 export type SuiAgentConfig = {
   /**
@@ -19,6 +20,51 @@ export type SuiAgentConfig = {
    * Treasury address for commissions/fees
    */
   treasury?: string;
+
+  /**
+   * Cache configuration for the agent. Leave empty to use default in-memory caching.
+   * @property {CacheStoreType} cacheStoreType - The type of cache store to use:
+   *   - "redis": Redis-based caching
+   *   - "lru": LRU-based caching
+   *   - "memory": Simple in-memory caching
+   *
+   * For Redis cache (cacheStoreType: "redis"):
+   * @property {string} externalDbUrl - Redis connection URL
+   * @property {string} [namespace] - Optional namespace for Redis keys
+   *
+   * For LRU cache (cacheStoreType: "lru"):
+   * @property {number} [lruSize] - Maximum number of items to store in the LRU cache
+   * @property {number} [ttl] - Time-to-live in seconds for cached items
+   *
+   * For Memory cache (cacheStoreType: "memory"):
+   * No additional configuration needed
+   *
+   * @example Redis configuration
+   * ```typescript
+   * {
+   *   cacheStoreType: "redis",
+   *   externalDbUrl: "redis://localhost:6379",
+   *   namespace: "my-cache"
+   * }
+   * ```
+   *
+   * @example LRU configuration
+   * ```typescript
+   * {
+   *   cacheStoreType: "lru",
+   *   lruSize: 1000,
+   *   ttl: 3600
+   * }
+   * ```
+   *
+   * @example Memory configuration
+   * ```typescript
+   * {
+   *   cacheStoreType: "memory"
+   * }
+   * ```
+   */
+  cache?: CacheStoreConfig;
 };
 
 export interface SuiAgentKitClass extends BaseAgentKitClass {

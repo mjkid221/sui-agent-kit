@@ -1,17 +1,14 @@
-import { createCache } from "cache-manager";
 import { Keyv } from "keyv";
 
 export class CacheStore {
   private cache;
 
-  constructor() {
-    this.cache = createCache({
-      stores: [new Keyv()],
-    });
+  constructor(store: Keyv) {
+    this.cache = store;
   }
-
   async get<T>(key: string): Promise<T | null> {
-    return this.cache.get<T>(key);
+    const value = await this.cache.get<T>(key);
+    return value ?? null;
   }
 
   /**
@@ -22,7 +19,8 @@ export class CacheStore {
    * @returns The value that was set
    */
   async set<T>(key: string, value: T, ttl?: number): Promise<T> {
-    return this.cache.set(key, value, ttl);
+    await this.cache.set(key, value, ttl);
+    return value;
   }
 
   /**
@@ -31,7 +29,7 @@ export class CacheStore {
    * @returns Whether the key was deleted
    */
   async del(key: string): Promise<boolean> {
-    return this.cache.del(key);
+    return this.cache.delete(key);
   }
 
   /**
@@ -39,7 +37,7 @@ export class CacheStore {
    * If the cache is not hit, the function is called and the result is cached.
    * @param key - The key to use for the cache
    * @param fn - The function to wrap
-   * @param ttl - The time to live for the cache in seconds. If not provided, the cache will be cached indefinitely.
+   * @param ttl - The time to live for the cache in milliseconds. If not provided, the cache will be cached indefinitely.
    * @returns The result of the function
    */
   async withCache<T>(

@@ -14,6 +14,7 @@ export const requestDeployCoin = async (
     await initMoveByteCodeTemplate();
     const tx = new Transaction();
 
+    // TODO: this is broken
     if (agent.config.coinDeployFixedFee) {
       const [fee] = tx.splitCoins(tx.gas, [
         String(agent.config.coinDeployFixedFee * 10 ** SUI_DECIMALS),

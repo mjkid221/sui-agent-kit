@@ -30,9 +30,10 @@ import {
 } from "@/lib/helpers/cache";
 import { getCoinDecimals } from "@/tools/sui/native/requestCoinBalance/getCoinDecimals";
 import { SUI_TYPE_ARG } from "@mysten/sui/utils";
-import { sec } from "ms-extended";
+import { ms } from "ms-extended";
 import { CetusPoolManager } from "@/tools/sui/cetus";
 import { CETUS_FEE_TIERS } from "@/tools/sui/cetus/fees";
+import { SuilendService } from "@/tools/sui/suilend";
 
 export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
   public wallet: Ed25519Keypair;
@@ -43,6 +44,7 @@ export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
     treasury: string;
   };
   public cetusPoolManager: CetusPoolManager;
+  public suilendService: SuilendService;
 
   constructor({
     ed25519PrivateKey,
@@ -55,7 +57,7 @@ export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
     agentNetwork: "testnet" | "mainnet";
     config: SuiAgentConfig;
   }) {
-    super();
+    super(config.cache);
     const rpc = rpcUrl ?? getFullnodeUrl(agentNetwork);
     this.client = new SuiClient({
       url: rpc,
@@ -73,6 +75,8 @@ export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
       client: this.client,
       network: agentNetwork,
     });
+    // Suilend Service setup
+    this.suilendService = new SuilendService(this);
   }
 
   async requestFaucetFunds() {
@@ -186,7 +190,7 @@ export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
     return this.cache.withCache(
       createTokenDataByAddressCacheKey(coinType, ChainIdentifier.SUI),
       () => getTokenDataByAddress(coinType, ChainIdentifier.SUI),
-      sec("5m"),
+      ms("5m"),
     );
   }
 
@@ -194,7 +198,7 @@ export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
     return this.cache.withCache(
       createTokenAddressFromTickerCacheKey(ticker, ChainIdentifier.SUI),
       () => getTokenAddressFromTicker(ticker, ChainIdentifier.SUI),
-      sec("5m"),
+      ms("5m"),
     );
   }
 
@@ -202,7 +206,7 @@ export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
     return this.cache.withCache(
       createTokenDataByTickerCacheKey(ticker, ChainIdentifier.SUI),
       () => getTokenDataByTicker(ticker, ChainIdentifier.SUI),
-      sec("5m"),
+      ms("5m"),
     );
   }
 
@@ -210,7 +214,7 @@ export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
     return this.cache.withCache(
       createTokenPriceCacheKey(coinType, ChainIdentifier.SUI),
       () => getTokenPriceByAddress(coinType, ChainIdentifier.SUI),
-      sec("5m"),
+      ms("5m"),
     );
   }
 

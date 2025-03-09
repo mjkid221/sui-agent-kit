@@ -7,7 +7,7 @@ export class SuiAssetDataByTickerTool extends Tool {
   name = "sui_asset_data_by_ticker";
   description = `Get the token data for a given ticker
 
-  Inputs ( input is a JSON string ) :
+  Inputs ( input is a string ) :
   ticker: string, eg "SUI" or "USDC" (required)`;
 
   constructor(private SuiKit: SuiAgentKit) {
