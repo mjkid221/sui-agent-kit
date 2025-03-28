@@ -34,6 +34,7 @@ import { ms } from "ms-extended";
 import { CetusPoolManager } from "@/tools/sui/cetus";
 import { CETUS_FEE_TIERS } from "@/tools/sui/cetus/fees";
 import { SuilendService } from "@/tools/sui/suilend";
+import { Transaction } from "@mysten/sui/transactions";
 
 export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
   public wallet: Ed25519Keypair;
@@ -139,7 +140,7 @@ export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
     coinTypeB: string,
     initialPrice: number,
     feeTier: keyof typeof CETUS_FEE_TIERS,
-    slippage: number = 5, // 5%
+    slippagePercentage: number,
   ) {
     return this.cetusPoolManager.createClmmPool(
       coinTypeA,
@@ -147,7 +148,7 @@ export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
       coinTypeB,
       initialPrice,
       feeTier,
-      slippage,
+      slippagePercentage,
     );
   }
 
@@ -171,19 +172,8 @@ export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
     );
   }
 
-  async requestClosePoolPositionCetus() {
-    // TODO: implement
-    return this.cetusPoolManager.closePoolPosition();
-  }
-
-  async requestSendAirdrop() {
-    // TODO: Implement
-    throw new Error("Not implemented");
-  }
-
-  async requestLaunchHopFun() {
-    // TODO: Implement
-    throw new Error("Not implemented");
+  async requestClosePoolPositionCetus(positionId: string) {
+    return this.cetusPoolManager.closePoolPosition(positionId);
   }
 
   async requestAssetDataByCoinType(coinType: string) {
@@ -218,7 +208,37 @@ export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
     );
   }
 
-  async requestLendAssets() {
-    throw new Error("Not implemented");
+  async requestLendAssetSuilend(
+    amount: number,
+    coinType: string = SUI_TYPE_ARG,
+  ) {
+    return this.suilendService.depositAsset(amount, coinType);
+  }
+
+  async requestWithdrawLendedAssetSuilend(coinType: string = SUI_TYPE_ARG) {
+    return this.suilendService.withdrawAsset(coinType);
+  }
+
+  async requestGetCurrentLendedAssetsSuilend() {
+    return this.suilendService.getDeposits();
+  }
+
+  async requestGetRewardsSuilend() {
+    return this.suilendService.getRewards();
+  }
+
+  async requestClaimAllRewardsSuilend() {
+    return this.suilendService.claimAllRewards();
+  }
+
+  async signExecuteAndWaitForTransaction(
+    transaction: Uint8Array | Transaction,
+  ) {
+    const { digest } = await this.client.signAndExecuteTransaction({
+      transaction,
+      signer: this.wallet,
+    });
+    const response = await this.client.waitForTransaction({ digest });
+    return response.digest;
   }
 }

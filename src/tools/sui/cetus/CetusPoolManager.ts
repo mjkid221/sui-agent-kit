@@ -2,8 +2,12 @@ import { SuiAgentKit } from "@/agent/sui";
 import { CETUS_FEE_TIERS } from "./fees";
 import { createClmmPool } from "./createClmmPool";
 import CetusClmmSDK, {
+  adjustForCoinSlippage,
+  ClmmPoolUtil,
   initCetusSDK,
+  Percentage,
   Position,
+  TickMath,
 } from "@cetusprotocol/cetus-sui-clmm-sdk";
 import { getTickValues } from "./getTickValues";
 import {
@@ -21,14 +25,15 @@ import {
   LiquidityInputWithExistingPool,
   LiquidityInputWithNewPool,
 } from "./types";
+import BN from "bn.js";
 
 /**
  * CetusPoolManager is a wrapper around the Cetus SDK that provides a more user-friendly interface for creating and managing pools
  */
 export class CetusPoolManager extends BaseCacheStore {
-  public cetusSDK: CetusClmmSDK;
+  public readonly cetusSDK: CetusClmmSDK;
   constructor(
-    public agent: SuiAgentKit,
+    public readonly agent: SuiAgentKit,
     agentNetwork: "testnet" | "mainnet",
     fullNodeUrl: string,
   ) {
@@ -61,7 +66,7 @@ export class CetusPoolManager extends BaseCacheStore {
     coinTypeB: string,
     initialPrice: number,
     feeTier: keyof typeof CETUS_FEE_TIERS,
-    slippage: number,
+    slippagePercentage: number,
   ) {
     const { key, value } = await this.getEstimatedLiquidityPairInputWithNewPool(
       coinTypeA,
@@ -69,7 +74,7 @@ export class CetusPoolManager extends BaseCacheStore {
       coinTypeB,
       initialPrice,
       feeTier,
-      slippage,
+      slippagePercentage,
     );
     const digest = await createClmmPool(this.agent, value);
     await this.cache.del(key);
@@ -123,8 +128,71 @@ export class CetusPoolManager extends BaseCacheStore {
     return this.cetusSDK.Pool.getPool(poolID);
   }
 
-  closePoolPosition() {
-    throw new Error("Not implemented");
+  async getPoolByCoins(
+    coinTypeA: string,
+    coinTypeB: string,
+    feeTier?: keyof typeof CETUS_FEE_TIERS,
+  ) {
+    const pools = await this.cetusSDK.Pool.getPoolByCoins([
+      coinTypeA,
+      coinTypeB,
+    ]);
+    if (feeTier) {
+      return pools.find((pool) => Number(pool.fee_rate) === feeTier * 100);
+    }
+    return pools[0];
+  }
+
+  async closePoolPosition(positionId: string) {
+    const position = await this.cetusSDK.Position.getPositionById(positionId);
+    const pool = await this.cetusSDK.Pool.getPool(position.pool);
+    const lowerSqrtPrice = TickMath.tickIndexToSqrtPriceX64(
+      position.tick_lower_index,
+    );
+    const upperSqrtPrice = TickMath.tickIndexToSqrtPriceX64(
+      position.tick_upper_index,
+    );
+
+    const liquidity = new BN(position.liquidity);
+    const slippageTolerance = new Percentage(new BN(5), new BN(100));
+    const curSqrtPrice = new BN(pool.current_sqrt_price);
+    const coinAmounts = ClmmPoolUtil.getCoinAmountFromLiquidity(
+      liquidity,
+      curSqrtPrice,
+      lowerSqrtPrice,
+      upperSqrtPrice,
+      false,
+    );
+    const { tokenMaxA, tokenMaxB } = adjustForCoinSlippage(
+      coinAmounts,
+      slippageTolerance,
+      false,
+    );
+    const rewards = await this.cetusSDK.Rewarder.posRewardersAmount(
+      position.pool,
+      pool.position_manager.positions_handle,
+      position.pos_object_id,
+    );
+    const rewardCoinTypes = rewards
+      .filter((item) => Number(item.amount_owed) > 0)
+      .map((item) => item.coin_address);
+
+    const closePositionTransactionPayload =
+      await this.cetusSDK.Position.closePositionTransactionPayload({
+        coinTypeA: pool.coinTypeA,
+        coinTypeB: pool.coinTypeB,
+        min_amount_a: tokenMaxA.toString(),
+        min_amount_b: tokenMaxB.toString(),
+        rewarder_coin_types: [...rewardCoinTypes],
+        pool_id: pool.poolAddress,
+        pos_id: position.pos_object_id,
+        collect_fee: true,
+      });
+
+    const digest = await this.agent.signExecuteAndWaitForTransaction(
+      closePositionTransactionPayload,
+    );
+    return digest;
   }
 
   getTickValues(currentTickIndex: number, tickSpacing: number) {

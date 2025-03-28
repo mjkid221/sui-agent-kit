@@ -1,11 +1,13 @@
 import { SuiAgentKit } from "@/agent/sui";
 import {
+  ClaimRewardsReward,
   createObligationIfNoneExists,
   initializeObligations,
   initializeSuilend,
   initializeSuilendRewards,
   LENDING_MARKET_ID,
   LENDING_MARKET_TYPE,
+  RewardSummary,
   sendObligationToUser,
   SuilendClient,
 } from "@suilend/sdk";
@@ -16,7 +18,8 @@ import { Transaction } from "@mysten/sui/transactions";
 import { serializeConfiguration } from "@/lib/utils/serialize";
 import { formatRewards } from "./liquidityMining";
 import { SuilendServiceInterface } from "./SuilendServiceClass";
-import { isDeprecated } from "@suilend/frontend-sui";
+import { isDeprecated, isSendPoints } from "@suilend/frontend-sui";
+import BigNumber from "bignumber.js";
 
 export class SuilendService
   extends BaseCacheStore
@@ -35,7 +38,7 @@ export class SuilendService
     super();
   }
 
-  async initialize() {
+  public async initialize() {
     this.suilendClient = await SuilendClient.initialize(
       LENDING_MARKET_ID,
       LENDING_MARKET_TYPE,
@@ -55,7 +58,7 @@ export class SuilendService
     };
   }
 
-  async depositAssets(amount: number, coinType: string = SUI_TYPE_ARG) {
+  public async depositAsset(amount: number, coinType: string = SUI_TYPE_ARG) {
     this.isClientInitialized();
     const transaction = new Transaction();
     const decimals = await this.agent.requestGetCoinDecimals(coinType);
@@ -203,33 +206,104 @@ export class SuilendService
     );
   }
 
-  public async initializeObligation() {
-    return this.cache.withCache(
-      "suilend-obligation",
-      async () => {
-        this.isClientInitialized();
-        const config = await this.ensureInitializedWithFreshConfig();
-        const { obligationOwnerCaps, obligations } =
-          await initializeObligations(
-            this.agent.client,
-            this.suilendClient,
-            config.refreshedRawReserves,
-            config.reserveMap,
-            this.agent.wallet.getPublicKey().toSuiAddress(),
-          );
-        const rewardMap = formatRewards(
-          config.reserveMap,
-          config.rewardCoinMetadataMap,
-          config.rewardPriceMap,
-          obligations,
-        );
-        return {
-          obligationOwnerCaps,
-          rewardMap,
-          obligations: await serializeConfiguration(obligations),
-        };
-      },
-      ms("30s"),
+  private async initializeObligation() {
+    this.isClientInitialized();
+    const config = await this.ensureInitializedWithFreshConfig();
+    const { obligationOwnerCaps, obligations } = await initializeObligations(
+      this.agent.client,
+      this.suilendClient,
+      config.refreshedRawReserves,
+      config.reserveMap,
+      this.agent.wallet.getPublicKey().toSuiAddress(),
     );
+    const rewardMap = formatRewards(
+      config.reserveMap,
+      config.rewardCoinMetadataMap,
+      config.rewardPriceMap,
+      obligations,
+    );
+    return {
+      obligationOwnerCaps,
+      rewardMap,
+      obligations,
+    };
+  }
+
+  public async getRewards() {
+    this.isClientInitialized();
+    const { rewardMap, obligations } = await this.initializeObligation();
+    const rewardsMap: Record<string, RewardSummary[]> = {};
+    const claimableRewardsMap: Record<string, BigNumber> = {};
+    const obligation = obligations[0];
+
+    if (obligation) {
+      Object.values(rewardMap).flatMap((rewards) =>
+        [...rewards.deposit, ...rewards.borrow].forEach((r) => {
+          if (isSendPoints(r.stats.rewardCoinType)) {
+            return;
+          }
+          if (!r.obligationClaims[obligation.id]) {
+            return;
+          }
+          if (r.obligationClaims[obligation.id].claimableAmount.eq(0)) {
+            return;
+          }
+
+          const minAmount = 10 ** (-1 * r.stats.mintDecimals);
+          if (r.obligationClaims[obligation.id].claimableAmount.lt(minAmount)) {
+            return;
+          }
+
+          if (!rewardsMap[r.stats.rewardCoinType]) {
+            rewardsMap[r.stats.rewardCoinType] = [];
+          }
+          rewardsMap[r.stats.rewardCoinType].push(r);
+        }),
+      );
+
+      Object.entries(rewardsMap).forEach(([coinType, rewards]) => {
+        claimableRewardsMap[coinType] = rewards.reduce(
+          (acc, reward) =>
+            acc.plus(reward.obligationClaims[obligation.id].claimableAmount),
+          new BigNumber(0),
+        );
+      });
+    }
+
+    return {
+      rewardsMap,
+      availableRewards: serializeConfiguration(claimableRewardsMap),
+    };
+  }
+
+  public async claimAllRewards() {
+    this.isClientInitialized();
+    const transaction = new Transaction();
+    const { obligations, obligationOwnerCaps } =
+      await this.initializeObligation();
+
+    const obligation = obligations[0];
+    const obligationOwnerCap = obligationOwnerCaps[0];
+
+    const { rewardsMap } = await this.getRewards();
+
+    const rewards: ClaimRewardsReward[] = Object.values(rewardsMap)
+      .flat()
+      .map((r) => ({
+        reserveArrayIndex: r.obligationClaims[obligation.id].reserveArrayIndex,
+        rewardIndex: BigInt(r.stats.rewardIndex),
+        rewardCoinType: r.stats.rewardCoinType,
+        side: r.stats.side,
+      }));
+
+    this.suilendClient.claimRewardsAndSendToUser(
+      this.agent.wallet.toSuiAddress(),
+      obligationOwnerCap.id,
+      rewards,
+      transaction,
+    );
+
+    const tx = await this.agent.signExecuteAndWaitForTransaction(transaction);
+    return tx;
   }
 }

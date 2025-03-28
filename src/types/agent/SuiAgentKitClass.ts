@@ -4,6 +4,7 @@ import { SuinsClient } from "@/tools/sui";
 import { SuiClient } from "@mysten/sui/client";
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { CacheStoreConfig } from "@/lib/classes/cache/types";
+import { Transaction } from "@mysten/sui/dist/cjs/transactions";
 
 export type SuiAgentConfig = {
   /**
@@ -94,4 +95,11 @@ export interface SuiAgentKitClass extends BaseAgentKitClass {
       fee: number;
     },
   ): Promise<string>;
+
+  /**
+   * Sign and execute a transaction and wait for it to be confirmed
+   * @param transaction - The transaction to sign and execute
+   * @returns The digest of the transaction (txhash)
+   */
+  signExecuteAndWaitForTransaction(transaction: Transaction): Promise<string>;
 }

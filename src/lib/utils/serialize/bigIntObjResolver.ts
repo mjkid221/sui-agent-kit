@@ -12,18 +12,18 @@ export type SerializeBigInt<
   : T;
 
 /**
- * Deep clone and convert BigInt instances in Objects to strings
+ * Deep clone and convert nested complex types such as BigInt instances in Objects to strings
  * @param config - The configuration object to serialize
- * @param serialize - Whether to apply type transformation (default: true)
+ * @param serialize - Whether to apply return type transformation. If false, the function will spoof return type as the original object type, but may come with unexpected behaviors.
  * @returns The serialized configuration object with BigInt converted to strings
  * @example
  * const config = { a: 1, b: 2n };
  * const serializedConfig = serializeConfiguration(config);
  * // serializedConfig: { a: 1, b: "2" }
  */
-export async function serializeConfiguration<T, Serialize extends boolean>(
+export function serializeConfiguration<T, Serialize extends boolean>(
   config: T,
-): Promise<SerializeBigInt<T, Serialize>> {
+): SerializeBigInt<T, Serialize> {
   return JSON.parse(
     JSON.stringify(config, (_, value) => {
       if (typeof value === "bigint") {

@@ -5,7 +5,7 @@ import KeyvRedis from "@keyv/redis";
 import { KeyvCacheableMemory } from "cacheable";
 
 export abstract class BaseCacheStore {
-  protected cache: CacheStore;
+  protected readonly cache: CacheStore;
   constructor(cacheStoreConfig?: CacheStoreConfig) {
     if (!cacheStoreConfig) {
       this.cache = new CacheStore(new Keyv());

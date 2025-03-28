@@ -28,17 +28,17 @@ export const requestMergeCoins = async (
 
   const coinsToMerge = [];
   let totalValueToMerge = 0;
-  if (coinData.length >= 2) {
-    for (const coin of coinData) {
-      if (Number(coin.balance) >= requestAmount) {
-        break;
-      }
-      if (totalValueToMerge >= requestAmount) {
-        break;
-      }
-      totalValueToMerge += Number(coin.balance);
-      coinsToMerge.push(coin.coinObjectId);
+
+  for (const coin of coinData) {
+    if (totalValueToMerge >= requestAmount) {
+      break;
     }
+    if (Number(coin.balance) >= requestAmount) {
+      coinsToMerge.push(coin.coinObjectId);
+      break;
+    }
+    totalValueToMerge += Number(coin.balance);
+    coinsToMerge.push(coin.coinObjectId);
   }
 
   const [destination, ...source] = coinsToMerge;
@@ -47,6 +47,6 @@ export const requestMergeCoins = async (
   }
 
   return {
-    destinationCoinObjectId: destination ?? coinData[0],
+    destinationCoinObjectId: destination,
   };
 };

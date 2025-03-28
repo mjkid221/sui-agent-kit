@@ -10,7 +10,7 @@ export interface SuilendServiceInterface extends BaseCacheStore {
    * @param coinType - The coin type of the assets to deposit excluding decimals
    * @returns The transaction hash of the deposit
    */
-  depositAssets(amount: number, coinType: string): Promise<string>;
+  depositAsset(amount: number, coinType: string): Promise<string>;
 
   /**
    * Initialize the Suilend service
@@ -18,7 +18,7 @@ export interface SuilendServiceInterface extends BaseCacheStore {
   initialize(): Promise<void>;
 
   /**
-   * Withdraw assets from the suilend market
+   * Withdraws all deposited asset of coinType from the suilend market
    * @param coinType - The coin type of the assets to withdraw
    * @returns The transaction hash of the withdrawal
    */
@@ -42,14 +42,4 @@ export interface SuilendServiceInterface extends BaseCacheStore {
       cTokenAmount: string;
     }>
   >;
-
-  /**
-   * Initialize obligation and get related information
-   * @returns Object containing obligation caps, reward map, and obligations
-   */
-  initializeObligation(): Promise<{
-    obligationOwnerCaps: any[];
-    rewardMap: any;
-    obligations: any;
-  }>;
 }
