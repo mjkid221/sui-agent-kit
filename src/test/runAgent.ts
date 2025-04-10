@@ -8,6 +8,7 @@ import { HumanMessage } from "@langchain/core/messages";
 import dotenv from "dotenv";
 import { getEnv } from "./utils/env";
 import { PostgresSaver } from "@langchain/langgraph-checkpoint-postgres";
+import { CacheStoreType } from "@/lib/classes/cache/types";
 
 dotenv.config();
 const env = getEnv();
@@ -30,6 +31,10 @@ async function initializeAgent() {
         treasury: env.FEE_TREASURY_ADDRESS,
         coinDeployFixedFee: env.COIN_DEPLOY_FIXED_FEE,
         tradeCommissionFeePercentage: env.TRADING_COMMISSION_FEE_PERCENTAGE,
+        cache: {
+          cacheStoreType: CacheStoreType.REDIS,
+          externalDbUrl: env.REDIS_DB_URL!,
+        },
       },
     });
 

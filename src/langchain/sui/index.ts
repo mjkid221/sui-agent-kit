@@ -4,6 +4,7 @@ import * as SUI_NS_TOOLS from "./suins";
 import * as FLOW_X_TOOLS from "./flowX";
 import * as DEX_SCREENER_TOOLS from "./dexScreener";
 import * as GO_PLUS_LABS_TOOLS from "./goPlusLabs";
+import * as SUI_SUILEND_TOOLS from "./suilend";
 
 export const createSuiTools = (suiAgentKit: SuiAgentKit) => {
   return [
@@ -18,5 +19,7 @@ export const createSuiTools = (suiAgentKit: SuiAgentKit) => {
     new DEX_SCREENER_TOOLS.SuiAssetAddressFromTickerTool(suiAgentKit),
     new GO_PLUS_LABS_TOOLS.SuiAssetDataByTickerTool(suiAgentKit),
     new GO_PLUS_LABS_TOOLS.SuiAssetDataByAddressTool(suiAgentKit),
+    new SUI_SUILEND_TOOLS.SuiGetReservesSuilend(suiAgentKit),
+    new SUI_SUILEND_TOOLS.SuiLendAssetSuilend(suiAgentKit),
   ];
 };

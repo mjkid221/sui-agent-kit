@@ -9,7 +9,7 @@ export class SuiResolveDomainTool extends Tool {
     If the domain does not exist or is not owned by an address, the function will return null.
     Otherwise, it will return the walletAddress of the domain owner.
 
-    Inputs ( input is a JSON string ) :
+    Inputs ( input is a string ) :
     name: string, eg "myname.sui" (required)
     `;
 
@@ -19,7 +19,9 @@ export class SuiResolveDomainTool extends Tool {
 
   protected async _call(input: string): Promise<string> {
     try {
-      const walletAddress = await this.suiAgentKit.requestResolveDomain(input);
+      const domainName = input.trim();
+      const walletAddress =
+        await this.suiAgentKit.requestResolveDomain(domainName);
 
       return returnSuccessResponse({
         status: "success",
