@@ -17,9 +17,10 @@ export const requestTransferCoin = async (
     });
 
     const decimals = await getCoinDecimals(agent, coinType);
-    const [coin] = tx.splitCoins(coins.data[0].coinObjectId, [
-      String(amount * 10 ** decimals),
-    ]);
+    const [coin] = tx.splitCoins(
+      coinType ? coins.data[0].coinObjectId : tx.gas,
+      [String(amount * 10 ** decimals)],
+    );
     tx.transferObjects([coin], tx.pure.address(to));
 
     const result = await agent.client.signAndExecuteTransaction({

@@ -19,6 +19,7 @@ export class SuiTransferTool extends Tool {
 
   protected async _call(input: string): Promise<string> {
     try {
+      console.log("input-----", input);
       const { amount, to, coinType } = JSON.parse(input);
 
       const tx = await this.suiAgentKit.requestTransferCoinOrToken(

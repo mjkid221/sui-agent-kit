@@ -9,4 +9,4 @@ node_modules
 
 **/move/**/build/**
 
-test/ignoredTest.ts
+**/ignored/**

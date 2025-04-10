@@ -1,11 +1,21 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { Transaction } from "@mysten/sui/transactions";
+import { coinWithBalance, Transaction } from "@mysten/sui/transactions";
 
 import { TokenCreationInterface } from "./types";
-import { normalizeSuiAddress } from "@mysten/sui/utils";
+import {
+  normalizeSuiAddress,
+  SUI_DECIMALS,
+  SUI_TYPE_ARG,
+} from "@mysten/sui/utils";
 import initMoveByteCodeTemplate from "./move-bytecode-template";
 import { getBytecode } from "./coin";
 
+/**
+ * Deploy a new coin on Sui
+ * @param agent SuiAgentKit - Sui agent class
+ * @param tokenInfo TokenCreationInterface - Token creation interface
+ * @returns string - Coin type of the deployed coin
+ */
 export const requestDeployCoin = async (
   agent: SuiAgentKit,
   tokenInfo: TokenCreationInterface,
@@ -15,10 +25,12 @@ export const requestDeployCoin = async (
     const tx = new Transaction();
 
     if (agent.config.coinDeployFixedFee) {
-      const [fee] = tx.splitCoins(tx.gas, [
-        String(agent.config.coinDeployFixedFee),
-      ]);
-      tx.transferObjects([fee], tx.pure.address(agent.config.treasury));
+      const feeAmount = agent.config.coinDeployFixedFee * 10 ** SUI_DECIMALS;
+
+      tx.transferObjects(
+        [coinWithBalance({ balance: feeAmount, type: SUI_TYPE_ARG })],
+        tx.pure.address(agent.config.treasury),
+      );
     }
 
     const bytecode = await getBytecode({
