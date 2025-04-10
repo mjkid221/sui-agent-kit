@@ -11,6 +11,7 @@ export const EnvironmentVariablesSchema = z.object({
   TRADING_COMMISSION_FEE_PERCENTAGE: z.coerce.number().optional(),
   OPENAI_API_KEY: z.string(),
   POSTGRES_DB_URL: z.string().optional(),
+  REDIS_DB_URL: z.string().optional(),
 });
 
 export function getEnv() {

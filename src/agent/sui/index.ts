@@ -208,14 +208,15 @@ export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
     );
   }
 
-  async requestLendAssetSuilend(
-    amount: number,
-    coinType: string = SUI_TYPE_ARG,
-  ) {
+  async requestLendAssetSuilend(amount: number, coinType: string) {
     return this.suilendService.depositAsset(amount, coinType);
   }
 
-  async requestWithdrawLendedAssetSuilend(coinType: string = SUI_TYPE_ARG) {
+  async requestSuilendReserves() {
+    return this.suilendService.getReserves();
+  }
+
+  async requestWithdrawLendedAssetSuilend(coinType: string) {
     return this.suilendService.withdrawAsset(coinType);
   }
 
@@ -224,7 +225,7 @@ export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
   }
 
   async requestGetRewardsSuilend() {
-    return this.suilendService.getRewards();
+    return (await this.suilendService.getRewards()).availableRewards;
   }
 
   async requestClaimAllRewardsSuilend() {

@@ -20,6 +20,7 @@ import { formatRewards } from "./liquidityMining";
 import { SuilendServiceInterface } from "./SuilendServiceClass";
 import { isDeprecated, isSendPoints } from "@suilend/frontend-sui";
 import BigNumber from "bignumber.js";
+import sanitizeAddress from "@/lib/utils/address/sanitizeAddress";
 
 export class SuilendService
   extends BaseCacheStore
@@ -35,7 +36,7 @@ export class SuilendService
   }
 
   constructor(private readonly agent: SuiAgentKit) {
-    super();
+    super(agent.config.cache);
   }
 
   public async initialize() {
@@ -58,8 +59,14 @@ export class SuilendService
     };
   }
 
-  public async depositAsset(amount: number, coinType: string = SUI_TYPE_ARG) {
+  public async depositAsset(amount: number, coinType: string) {
+    await this.ensureClientInitialized();
     this.isClientInitialized();
+
+    const reserves = await this.getReserves();
+    if (!reserves.includes(coinType)) {
+      throw new Error("Coin type is not a supported suilend asset");
+    }
     const transaction = new Transaction();
     const decimals = await this.agent.requestGetCoinDecimals(coinType);
     const { obligationOwnerCaps } = await this.initializeObligation();
@@ -96,8 +103,10 @@ export class SuilendService
     return response.digest;
   }
 
-  public async withdrawAsset(coinType: string = SUI_TYPE_ARG) {
+  public async withdrawAsset(coinType: string) {
+    await this.ensureClientInitialized();
     this.isClientInitialized();
+
     const transaction = new Transaction();
     const { obligationOwnerCaps, obligations } =
       await this.initializeObligation();
@@ -131,34 +140,35 @@ export class SuilendService
     return response.digest;
   }
 
-  private isClientInitialized(): asserts this is {
-    suilendClient: SuilendClient;
-  } {
-    if (!this.suilendClient) {
-      throw new Error("Suilend client not initialized");
-    }
-  }
-
-  private async ensureInitializedWithFreshConfig() {
-    this.isClientInitialized();
-    const freshConfig = await this.fetchConfiguration();
-    this._configuration = freshConfig;
-    return freshConfig;
-  }
-
   public async getReserves() {
-    this.isClientInitialized();
-    const config = await this.ensureInitializedWithFreshConfig();
-    return config.refreshedRawReserves.filter(
-      (reserve) =>
-        !isDeprecated(reserve.coinType.name.toString()) &&
-        BigInt(reserve.config.element?.depositLimit ?? 0) > BigInt(0),
+    return this.cache.withCache(
+      "suilend-reserves",
+      async () => {
+        const config = await this.ensureInitializedWithFreshConfig();
+        return config.refreshedRawReserves
+          .filter(
+            (reserve) =>
+              !isDeprecated(reserve.coinType.name.toString()) &&
+              BigInt(reserve.config.element?.depositLimit ?? 0) > BigInt(0),
+          )
+          .map((reserve) => {
+            if (
+              reserve.coinType.name.toString() ===
+              "0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"
+            ) {
+              return SUI_TYPE_ARG;
+            }
+            return sanitizeAddress(reserve.coinType.name.toString());
+          });
+      },
+      ms("30m"),
     );
   }
 
   public async getDeposits() {
-    this.isClientInitialized();
     const config = await this.ensureInitializedWithFreshConfig();
+    this.isClientInitialized();
+
     const { obligations } = await initializeObligations(
       this.agent.client,
       this.suilendClient,
@@ -176,62 +186,9 @@ export class SuilendService
     });
   }
 
-  private async fetchConfiguration() {
-    return this.cache.withCache(
-      "suilend-configuration",
-      async () => {
-        this.isClientInitialized();
-        const configuration = await initializeSuilend(
-          this.agent.client,
-          this.suilendClient,
-        );
-        const rewardConfiguration = await initializeSuilendRewards(
-          configuration.reserveMap,
-          configuration.activeRewardCoinTypes,
-        );
-
-        // Serialize configuration before caching
-        const serializableConfig = serializeConfiguration<
-          Awaited<ReturnType<typeof initializeSuilend>> &
-            Awaited<ReturnType<typeof initializeSuilendRewards>>,
-          false
-        >({
-          ...configuration,
-          ...rewardConfiguration,
-        });
-
-        return serializableConfig;
-      },
-      ms("30s"),
-    );
-  }
-
-  private async initializeObligation() {
-    this.isClientInitialized();
-    const config = await this.ensureInitializedWithFreshConfig();
-    const { obligationOwnerCaps, obligations } = await initializeObligations(
-      this.agent.client,
-      this.suilendClient,
-      config.refreshedRawReserves,
-      config.reserveMap,
-      this.agent.wallet.getPublicKey().toSuiAddress(),
-    );
-    const rewardMap = formatRewards(
-      config.reserveMap,
-      config.rewardCoinMetadataMap,
-      config.rewardPriceMap,
-      obligations,
-    );
-    return {
-      obligationOwnerCaps,
-      rewardMap,
-      obligations,
-    };
-  }
-
   public async getRewards() {
-    this.isClientInitialized();
     const { rewardMap, obligations } = await this.initializeObligation();
+    this.isClientInitialized();
     const rewardsMap: Record<string, RewardSummary[]> = {};
     const claimableRewardsMap: Record<string, BigNumber> = {};
     const obligation = obligations[0];
@@ -277,11 +234,11 @@ export class SuilendService
   }
 
   public async claimAllRewards() {
-    this.isClientInitialized();
-    const transaction = new Transaction();
     const { obligations, obligationOwnerCaps } =
       await this.initializeObligation();
+    this.isClientInitialized();
 
+    const transaction = new Transaction();
     const obligation = obligations[0];
     const obligationOwnerCap = obligationOwnerCaps[0];
 
@@ -305,5 +262,80 @@ export class SuilendService
 
     const tx = await this.agent.signExecuteAndWaitForTransaction(transaction);
     return tx;
+  }
+
+  private async fetchConfiguration() {
+    return this.cache.withCache(
+      "suilend-configuration",
+      async () => {
+        this.isClientInitialized();
+        const configuration = await initializeSuilend(
+          this.agent.client,
+          this.suilendClient,
+        );
+        const rewardConfiguration = await initializeSuilendRewards(
+          configuration.reserveMap,
+          configuration.activeRewardCoinTypes,
+        );
+
+        // Serialize configuration before caching
+        const serializableConfig = serializeConfiguration<
+          Awaited<ReturnType<typeof initializeSuilend>> &
+            Awaited<ReturnType<typeof initializeSuilendRewards>>,
+          false
+        >({
+          ...configuration,
+          ...rewardConfiguration,
+        });
+
+        return serializableConfig;
+      },
+      ms("30s"),
+    );
+  }
+
+  private async initializeObligation() {
+    const config = await this.ensureInitializedWithFreshConfig();
+    this.isClientInitialized();
+    const { obligationOwnerCaps, obligations } = await initializeObligations(
+      this.agent.client,
+      this.suilendClient,
+      config.refreshedRawReserves,
+      config.reserveMap,
+      this.agent.wallet.getPublicKey().toSuiAddress(),
+    );
+    const rewardMap = formatRewards(
+      config.reserveMap,
+      config.rewardCoinMetadataMap,
+      config.rewardPriceMap,
+      obligations,
+    );
+    return {
+      obligationOwnerCaps,
+      rewardMap,
+      obligations,
+    };
+  }
+
+  // Initializers
+  private async ensureClientInitialized() {
+    if (!this.suilendClient) {
+      await this.initialize();
+    }
+  }
+
+  private isClientInitialized(): asserts this is {
+    suilendClient: SuilendClient;
+  } {
+    if (!this.suilendClient) {
+      throw new Error("Suilend client not initialized");
+    }
+  }
+
+  private async ensureInitializedWithFreshConfig() {
+    await this.ensureClientInitialized();
+    const freshConfig = await this.fetchConfiguration();
+    this._configuration = freshConfig;
+    return freshConfig;
   }
 }

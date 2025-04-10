@@ -2,6 +2,7 @@ import { ChainIdentifier, ChainIdentifierType } from "@/types/chain";
 import { goPlusLabsApiV1 } from "../../api";
 import { GoPlusLabsTokenData, GoPlusLabsTokenDataResult } from "./types";
 import { getTokenAddressFromTicker } from "./getTokenAddressFromTicker";
+import sanitizeAddress from "@/lib/utils/address/sanitizeAddress";
 
 const getGoPlusLabsChainUrlPath = (chain: ChainIdentifierType) => {
   switch (chain) {
@@ -23,7 +24,7 @@ export const getTokenDataByAddress = async (
       GoPlusLabsTokenData<ChainIdentifierType>
     >(getGoPlusLabsChainUrlPath(chain), {
       params: {
-        contract_addresses: address,
+        contract_addresses: sanitizeAddress(address),
       },
     });
 

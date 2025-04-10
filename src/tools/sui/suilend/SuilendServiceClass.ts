@@ -28,7 +28,7 @@ export interface SuilendServiceInterface extends BaseCacheStore {
    * Get available reserves in the suilend market
    * @returns Array of filtered reserves that are not deprecated and have deposit limit > 0
    */
-  getReserves(): Promise<any[]>;
+  getReserves(): Promise<string[]>;
 
   /**
    * Get user deposits in the suilend market
@@ -42,4 +42,10 @@ export interface SuilendServiceInterface extends BaseCacheStore {
       cTokenAmount: string;
     }>
   >;
+
+  /**
+   * Claim all rewards of the lended assets in the suilend protocol.
+   * @returns The transaction digest of the claim
+   */
+  claimAllRewards(): Promise<string>;
 }
