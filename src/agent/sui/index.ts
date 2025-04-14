@@ -156,6 +156,14 @@ export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
     return this.cetusPoolManager.getPoolPositions();
   }
 
+  async requestGetPoolByCoinsCetus(
+    coinTypeA: string,
+    coinTypeB: string,
+    feeTier?: keyof typeof CETUS_FEE_TIERS,
+  ) {
+    return this.cetusPoolManager.getPoolByCoins(coinTypeA, coinTypeB, feeTier);
+  }
+
   async requestOpenPoolPositionCetus(
     poolId: string,
     coinTypeA: string,

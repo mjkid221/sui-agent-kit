@@ -4,7 +4,8 @@ import * as SUI_NS_TOOLS from "./suins";
 import * as FLOW_X_TOOLS from "./flowX";
 import * as DEX_SCREENER_TOOLS from "./dexScreener";
 import * as GO_PLUS_LABS_TOOLS from "./goPlusLabs";
-import * as SUI_SUILEND_TOOLS from "./suilend";
+import * as SUILEND_TOOLS from "./suilend";
+import * as CETUS_TOOLS from "./cetus";
 
 export const createSuiTools = (suiAgentKit: SuiAgentKit) => {
   return [
@@ -19,7 +20,16 @@ export const createSuiTools = (suiAgentKit: SuiAgentKit) => {
     new DEX_SCREENER_TOOLS.SuiAssetAddressFromTickerTool(suiAgentKit),
     new GO_PLUS_LABS_TOOLS.SuiAssetDataByTickerTool(suiAgentKit),
     new GO_PLUS_LABS_TOOLS.SuiAssetDataByAddressTool(suiAgentKit),
-    new SUI_SUILEND_TOOLS.SuiGetReservesSuilend(suiAgentKit),
-    new SUI_SUILEND_TOOLS.SuiLendAssetSuilend(suiAgentKit),
+    new SUILEND_TOOLS.SuiGetReservesSuilend(suiAgentKit),
+    new SUILEND_TOOLS.SuiLendAssetSuilend(suiAgentKit),
+    new SUILEND_TOOLS.SuiWithdrawLendedAssetSuilend(suiAgentKit),
+    new SUILEND_TOOLS.SuiGetRewardsSuilend(suiAgentKit),
+    new SUILEND_TOOLS.SuiGetLendedAssetsSuilend(suiAgentKit),
+    new SUILEND_TOOLS.SuiClaimAllRewardsSuilend(suiAgentKit),
+    new CETUS_TOOLS.SuiGetAllPoolPositionCetus(suiAgentKit),
+    new CETUS_TOOLS.SuiGetPoolByCoinsCetus(suiAgentKit),
+    new CETUS_TOOLS.SuiOpenPoolPositionCetus(suiAgentKit),
+    new CETUS_TOOLS.SuiClosePoolPositionCetus(suiAgentKit),
+    new CETUS_TOOLS.SuiCreateClmmPoolCetus(suiAgentKit),
   ];
 };
