@@ -52,7 +52,7 @@ export class CetusPoolManager extends BaseCacheStore {
    * @param coinTypeB - The coin type of the second token
    * @param initialPrice - The initial price of the coinTypeA in relative to coinTypeB.
    * @param feeTier - The fee tier of the pool. Refer to CETUS_FEE_TIERS
-   * @param slippage - The slippage % of the pool. E.g. 5 = 5%
+   * @param slippagePercentage - The slippage % of the pool. E.g. 5 = 5%
    * @returns The digest of the transaction
    * @example
    * ```ts
@@ -78,7 +78,13 @@ export class CetusPoolManager extends BaseCacheStore {
     );
     const digest = await createClmmPool(this.agent, value);
     await this.cache.del(key);
-    return digest;
+    return {
+      txDigest: digest,
+      coinTypeA: value.coinTypeA,
+      coinTypeB: value.coinTypeB,
+      coinTypeADepositAmount: value.amount_a,
+      coinTypeBDepositAmount: value.amount_b,
+    };
   }
 
   /**
@@ -138,11 +144,18 @@ export class CetusPoolManager extends BaseCacheStore {
       coinTypeB,
     ]);
     if (feeTier) {
-      return pools.find((pool) => Number(pool.fee_rate) === feeTier * 100);
+      return (
+        pools.find((pool) => Number(pool.fee_rate) === feeTier * 100) ?? null
+      );
     }
-    return pools[0];
+    return pools[0] ?? null;
   }
 
+  /**
+   * Close a pool position on Cetus
+   * @param positionId - The ID of the position
+   * @returns The digest of the transaction
+   */
   async closePoolPosition(positionId: string) {
     const position = await this.cetusSDK.Position.getPositionById(positionId);
     const pool = await this.cetusSDK.Pool.getPool(position.pool);
