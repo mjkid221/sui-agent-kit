@@ -1,5 +1,5 @@
 {
-  "name": "sui-agent-kit",
+  "name": "@mizu/sui-agent-kit",
   "version": "1.0.0",
   "description": "Agent Kit for Multi-Agent Interactions on Sui",
   "main": "index.js",
@@ -13,8 +13,8 @@
     "run:test-agent": "tsx src/test/runAgent.ts"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "MJ",
+  "license": "MIT",
   "dependencies": {
     "@cetusprotocol/cetus-sui-clmm-sdk": "^5.2.0",
     "@flowx-finance/sdk": "^1.9.10",
@@ -58,5 +58,13 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mjkid221/sui-agent-kit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mjkid221/sui-agent-kit/issues"
+  },
+  "homepage": "https://github.com/mjkid221/sui-agent-kit#readme"
 }
