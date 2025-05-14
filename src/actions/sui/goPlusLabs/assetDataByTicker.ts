@@ -1,24 +1,24 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 import { formatGoPlusLabsSuiTokenData } from "@/tools/sui/goPlusLabs";
 
-const inputSchema = z.object({
+const schema = z.object({
   ticker: z.string(),
 });
 
-const assetDataByTickerAction: SuiAction<typeof inputSchema> = {
-  name: "ASSET_DATA_BY_TICKER_ACTION",
-  similes: [
+const assetDataByTickerAction = createActionBuilderFor(SuiAgentKit)
+  .name("ASSET_DATA_BY_TICKER_ACTION")
+  .similes([
     "get token data by symbol",
     "check token info by ticker",
     "view token details by symbol",
     "get coin data by ticker",
     "check coin info by symbol",
     "get asset details by ticker",
-  ],
-  description: `Get the token data for a given ticker`,
-  examples: [
+  ])
+  .description(`Get the token data for a given ticker`)
+  .examples([
     [
       {
         input: {
@@ -62,9 +62,9 @@ const assetDataByTickerAction: SuiAction<typeof inputSchema> = {
           "Get detailed information about the USDC token using its ticker",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit, input) => {
+  ])
+  .schema(schema)
+  .handler(async (agent, input) => {
     const formattedAssetData = formatGoPlusLabsSuiTokenData(
       await agent.requestAssetDataByTicker(input.ticker),
     );
@@ -74,7 +74,6 @@ const assetDataByTickerAction: SuiAction<typeof inputSchema> = {
       message: "Asset data fetched successfully",
       assetData: formattedAssetData,
     };
-  },
-};
+  });
 
 export default assetDataByTickerAction;

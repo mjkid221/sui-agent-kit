@@ -1,8 +1,8 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 
-const inputSchema = z.object({
+const schema = z.object({
   name: z.string(),
   symbol: z.string(),
   totalSupply: z.number(),
@@ -13,22 +13,24 @@ const inputSchema = z.object({
   recipient: z.string().optional(),
 });
 
-const deployCoinAction: SuiAction<typeof inputSchema> = {
-  name: "DEPLOY_COIN_ACTION",
-  similes: [
+const deployCoinAction = createActionBuilderFor(SuiAgentKit)
+  .name("DEPLOY_COIN_ACTION")
+  .similes([
     "create new coin",
     "deploy token",
     "create token",
     "mint new coin",
     "deploy new coin",
     "create cryptocurrency",
-  ],
-  description: `Deploy a new coin on Sui blockchain. 
+  ])
+  .description(
+    `Deploy a new coin on Sui blockchain. 
     fixedSupply determines if the coin is fixed supply or not.
     Decimals are usually 6 for most coins unless otherwise specified.
     If recipient is not provided, the coin will be deployed to your (agent's) wallet.
     If description is not provided by the user, always prompt the user to provide them.`,
-  examples: [
+  )
+  .examples([
     [
       {
         input: {
@@ -70,9 +72,9 @@ const deployCoinAction: SuiAction<typeof inputSchema> = {
         explanation: "Deploy a new coin with custom settings",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit, input) => {
+  ])
+  .schema(schema)
+  .handler(async (agent, input) => {
     const coinType = await agent.requestDeployCoin(input);
 
     return {
@@ -81,7 +83,6 @@ const deployCoinAction: SuiAction<typeof inputSchema> = {
       createdCoinAddress: coinType,
       decimals: input.decimals || 6,
     };
-  },
-};
+  });
 
 export default deployCoinAction;

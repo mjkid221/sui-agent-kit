@@ -1,26 +1,28 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 
-const inputSchema = z.object({
+const schema = z.object({
   amount: z.number(),
   to: z.string(),
   coinType: z.string().optional(),
 });
 
-const transferAction: SuiAction<typeof inputSchema> = {
-  name: "TRANSFER_ACTION",
-  similes: [
+const transferAction = createActionBuilderFor(SuiAgentKit)
+  .name("TRANSFER_ACTION")
+  .similes([
     "transfer tokens",
     "send tokens",
     "transfer coins",
     "send coins",
     "transfer SUI",
     "send SUI",
-  ],
-  description: `Transfers coins or SUI to another address (a.k.a. wallet). 
+  ])
+  .description(
+    `Transfers coins or SUI to another address (a.k.a. wallet). 
     If no coinType is provided, the transfer will be in SUI, otherwise transfer the specified coin.`,
-  examples: [
+  )
+  .examples([
     [
       {
         input: {
@@ -58,9 +60,9 @@ const transferAction: SuiAction<typeof inputSchema> = {
         explanation: "Transfer 100 USDC to the specified address",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit, input) => {
+  ])
+  .schema(schema)
+  .handler(async (agent, input) => {
     const tx = await agent.requestTransferCoinOrToken(
       input.amount,
       input.to,
@@ -75,7 +77,6 @@ const transferAction: SuiAction<typeof inputSchema> = {
       coinType: input.coinType || "SUI",
       transaction: tx,
     };
-  },
-};
+  });
 
 export default transferAction;

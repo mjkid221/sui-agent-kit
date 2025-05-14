@@ -1,52 +1,54 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 
-const inputSchema = z.object({});
+const schema = z.object({});
 
-const getAllPoolPositionsAction: SuiAction<typeof inputSchema> = {
-  name: "GET_ALL_POOL_POSITIONS_CETUS_ACTION",
-  similes: [
+const getAllPoolPositionsAction = createActionBuilderFor(SuiAgentKit)
+  .name("GET_ALL_POOL_POSITIONS_CETUS_ACTION")
+  .similes([
+    "get all LP positions",
+    "list all liquidity positions",
+    "view all pool positions",
+    "show cetus positions",
     "list pool positions",
     "view liquidity positions",
-    "show pool positions",
-    "check LP positions",
-    "get all positions",
-    "view Cetus positions",
-  ],
-  description: `Get all open pool positions of the user. Returns an array of Position objects containing the position id.`,
-  examples: [
+  ])
+  .description(
+    `Get all pool positions on Cetus for the current wallet. This will return all the positions you have in any Cetus pool.`,
+  )
+  .examples([
     [
       {
         input: {},
         output: {
           status: "success",
           message: "Pool positions fetched successfully",
-          poolData: [
+          positions: [
             {
               positionId: "0x1234567890",
               poolId: "0x0987654321",
-              coinTypeA: "0x2::sui::SUI",
-              coinTypeB:
-                "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC",
+              tickLower: -100,
+              tickUpper: 100,
               liquidity: "1000000",
+              coinTypeA: "0x2::sui::SUI",
+              coinTypeB: "0x123::usdc::USDC",
             },
           ],
         },
-        explanation: "Get all open liquidity positions on Cetus",
+        explanation: "Get all Cetus pool positions for the current wallet",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit) => {
-    const poolData = await agent.requestGetAllPoolPositionsCetus();
+  ])
+  .schema(schema)
+  .handler(async (agent) => {
+    const positions = await agent.requestGetAllPoolPositionsCetus();
 
     return {
       status: "success",
       message: "Pool positions fetched successfully",
-      poolData,
+      positions,
     };
-  },
-};
+  });
 
 export default getAllPoolPositionsAction;

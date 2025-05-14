@@ -1,20 +1,20 @@
 import { z } from "zod";
-import { SuiAction } from "@/types/action";
 import { SuiAgentKit } from "@/agent/sui";
+import { createActionBuilderFor } from "../createAction";
 
-const inputSchema = z.object({});
+const schema = z.object({});
 
-const requestFundsAction: SuiAction<typeof inputSchema> = {
-  name: "REQUEST_FUNDS",
-  similes: [
+const requestFundsAction = createActionBuilderFor(SuiAgentKit)
+  .name("REQUEST_FUNDS")
+  .similes([
     "request sui",
     "get test sui",
     "use faucet",
     "request test sui",
     "get testnet sui",
-  ],
-  description: "Request SUI from Sui faucet (testnet only)",
-  examples: [
+  ])
+  .description("Request SUI from Sui faucet (testnet only)")
+  .examples([
     [
       {
         input: {},
@@ -25,16 +25,15 @@ const requestFundsAction: SuiAction<typeof inputSchema> = {
         explanation: "Request SUI from the testnet faucet",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit) => {
+  ])
+  .schema(schema)
+  .handler(async (agent) => {
     await agent.requestFaucetFunds();
 
     return {
       status: "success",
       message: "Successfully requested faucet funds",
     };
-  },
-};
+  });
 
 export default requestFundsAction;

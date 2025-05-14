@@ -1,24 +1,24 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 import { formatGoPlusLabsSuiTokenData } from "@/tools/sui/goPlusLabs";
 
-const inputSchema = z.object({
+const schema = z.object({
   coinType: z.string(),
 });
 
-const assetDataByAddressAction: SuiAction<typeof inputSchema> = {
-  name: "ASSET_DATA_BY_ADDRESS_ACTION",
-  similes: [
+const assetDataByAddressAction = createActionBuilderFor(SuiAgentKit)
+  .name("ASSET_DATA_BY_ADDRESS_ACTION")
+  .similes([
     "get token data",
     "check token info",
     "view token details",
     "get coin data",
     "check coin info",
     "get asset details",
-  ],
-  description: `Get the token data for a given coin type address`,
-  examples: [
+  ])
+  .description(`Get the token data for a given coin type address`)
+  .examples([
     [
       {
         input: {
@@ -61,9 +61,9 @@ const assetDataByAddressAction: SuiAction<typeof inputSchema> = {
         explanation: "Get detailed information about the SUI token",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit, input) => {
+  ])
+  .schema(schema)
+  .handler(async (agent, input) => {
     const formattedAssetData = formatGoPlusLabsSuiTokenData(
       await agent.requestAssetDataByCoinType(input.coinType),
     );
@@ -73,7 +73,6 @@ const assetDataByAddressAction: SuiAction<typeof inputSchema> = {
       message: "Asset data fetched successfully",
       assetData: formattedAssetData,
     };
-  },
-};
+  });
 
 export default assetDataByAddressAction;

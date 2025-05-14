@@ -1,26 +1,28 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 
-const inputSchema = z.object({
+const schema = z.object({
   name: z.string(),
 });
 
-const resolveDomainAction: SuiAction<typeof inputSchema> = {
-  name: "RESOLVE_DOMAIN_ACTION",
-  similes: [
+const resolveDomainAction = createActionBuilderFor(SuiAgentKit)
+  .name("RESOLVE_DOMAIN_ACTION")
+  .similes([
     "resolve domain",
     "lookup domain",
     "get domain owner",
     "find domain address",
     "check domain owner",
     "resolve .sui domain",
-  ],
-  description: `Resolve a .sui domain name to an address.
+  ])
+  .description(
+    `Resolve a .sui domain name to an address.
     Use this tool to get the wallet address of a .sui domain when you are given a .sui domain name.
     If the domain does not exist or is not owned by an address, the function will return null.
     Otherwise, it will return the walletAddress of the domain owner.`,
-  examples: [
+  )
+  .examples([
     [
       {
         input: {
@@ -48,9 +50,9 @@ const resolveDomainAction: SuiAction<typeof inputSchema> = {
         explanation: "Try to resolve a non-existent domain name",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit, input) => {
+  ])
+  .schema(schema)
+  .handler(async (agent, input) => {
     const walletAddress = await agent.requestResolveDomain(input.name);
 
     return {
@@ -58,7 +60,6 @@ const resolveDomainAction: SuiAction<typeof inputSchema> = {
       message: "Domain resolved successfully",
       walletAddress,
     };
-  },
-};
+  });
 
 export default resolveDomainAction;

@@ -1,49 +1,48 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 
-const inputSchema = z.object({
+const schema = z.object({
   positionId: z.string(),
 });
 
-const closePoolPositionAction: SuiAction<typeof inputSchema> = {
-  name: "CLOSE_POOL_POSITION_CETUS_ACTION",
-  similes: [
-    "close liquidity position",
-    "remove pool position",
-    "exit pool position",
+const closePoolPositionAction = createActionBuilderFor(SuiAgentKit)
+  .name("CLOSE_POOL_POSITION_CETUS_ACTION")
+  .similes([
+    "remove liquidity",
+    "withdraw liquidity",
     "close LP position",
+    "exit pool",
     "withdraw from pool",
-    "close Cetus position",
-  ],
-  description: `Close a pool position on Cetus by positionId. Ideally use the positionId returned from the get all pool position action.`,
-  examples: [
+    "exit liquidity position",
+  ])
+  .description(
+    `Close a pool position on Cetus. This will remove all liquidity and return the tokens to your wallet.
+    positionId can be found in the pool object returned by the get all pool position action.`,
+  )
+  .examples([
     [
       {
         input: {
-          positionId: "0x1234567890",
+          positionId: "0x0987654321",
         },
         output: {
           status: "success",
           message: "Pool position closed successfully",
           transaction: "transaction_digest_here",
         },
-        explanation: "Close a specific pool position on Cetus",
+        explanation: "Close an existing liquidity position",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit, input) => {
-    const txDigest = await agent.requestClosePoolPositionCetus(
-      input.positionId,
-    );
+  ])
+  .schema(schema)
+  .handler(async (agent, input) => {
+    await agent.requestClosePoolPositionCetus(input.positionId);
 
     return {
       status: "success",
       message: "Pool position closed successfully",
-      transaction: txDigest,
     };
-  },
-};
+  });
 
 export default closePoolPositionAction;

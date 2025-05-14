@@ -1,21 +1,23 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 
-const inputSchema = z.object({});
+const schema = z.object({});
 
-const claimAllRewardsAction: SuiAction<typeof inputSchema> = {
-  name: "CLAIM_ALL_REWARDS_SUILEND_ACTION",
-  similes: [
+const claimAllRewardsAction = createActionBuilderFor(SuiAgentKit)
+  .name("CLAIM_ALL_REWARDS_SUILEND_ACTION")
+  .similes([
     "claim rewards",
     "collect rewards",
     "harvest rewards",
     "claim lending rewards",
     "get earned rewards",
     "withdraw rewards",
-  ],
-  description: `Claim all rewards of the lended assets in the suilend protocol.`,
-  examples: [
+  ])
+  .description(
+    `Claim all rewards of the lended assets in the suilend protocol.`,
+  )
+  .examples([
     [
       {
         input: {},
@@ -27,9 +29,9 @@ const claimAllRewardsAction: SuiAction<typeof inputSchema> = {
         explanation: "Claim all available rewards from lending on SuiLend",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit) => {
+  ])
+  .schema(schema)
+  .handler(async (agent) => {
     const tx = await agent.requestClaimAllRewardsSuilend();
 
     return {
@@ -37,7 +39,6 @@ const claimAllRewardsAction: SuiAction<typeof inputSchema> = {
       message: "Rewards claimed successfully",
       transaction: tx,
     };
-  },
-};
+  });
 
 export default claimAllRewardsAction;

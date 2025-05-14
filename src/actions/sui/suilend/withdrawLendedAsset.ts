@@ -1,24 +1,26 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 
-const inputSchema = z.object({
+const schema = z.object({
   coinType: z.string(),
 });
 
-const withdrawLendedAssetAction: SuiAction<typeof inputSchema> = {
-  name: "WITHDRAW_LENDED_ASSET_SUILEND_ACTION",
-  similes: [
+const withdrawLendedAssetAction = createActionBuilderFor(SuiAgentKit)
+  .name("WITHDRAW_LENDED_ASSET_SUILEND_ACTION")
+  .similes([
     "withdraw lended asset",
     "withdraw supplied asset",
     "remove liquidity",
     "withdraw tokens",
     "withdraw deposited asset",
     "withdraw from lending",
-  ],
-  description: `Withdraw a lended asset from the suilend protocol completely. 
+  ])
+  .description(
+    `Withdraw a lended asset from the suilend protocol completely. 
     CoinType input is the coin type (address) of the asset to withdraw.`,
-  examples: [
+  )
+  .examples([
     [
       {
         input: {
@@ -46,9 +48,9 @@ const withdrawLendedAssetAction: SuiAction<typeof inputSchema> = {
         explanation: "Withdraw all lended SUI from the SuiLend protocol",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit, input) => {
+  ])
+  .schema(schema)
+  .handler(async (agent, input) => {
     const tx = await agent.requestWithdrawLendedAssetSuilend(input.coinType);
 
     return {
@@ -56,7 +58,6 @@ const withdrawLendedAssetAction: SuiAction<typeof inputSchema> = {
       message: "Asset withdrawn successfully",
       transaction: tx,
     };
-  },
-};
+  });
 
 export default withdrawLendedAssetAction;

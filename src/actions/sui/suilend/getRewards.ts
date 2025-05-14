@@ -1,21 +1,23 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 
-const inputSchema = z.object({});
+const schema = z.object({});
 
-const getRewardsAction: SuiAction<typeof inputSchema> = {
-  name: "GET_REWARDS_SUILEND_ACTION",
-  similes: [
+const getRewardsAction = createActionBuilderFor(SuiAgentKit)
+  .name("GET_REWARDS_SUILEND_ACTION")
+  .similes([
     "get lending rewards",
     "show rewards",
     "view earned rewards",
     "check rewards balance",
     "display rewards",
     "view lending earnings",
-  ],
-  description: `Get current eligible rewards of the lended assets in the suilend protocol.`,
-  examples: [
+  ])
+  .description(
+    `Get current eligible rewards of the lended assets in the suilend protocol.`,
+  )
+  .examples([
     [
       {
         input: {},
@@ -31,9 +33,9 @@ const getRewardsAction: SuiAction<typeof inputSchema> = {
         explanation: "Get current rewards earned from lending on SuiLend",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit) => {
+  ])
+  .schema(schema)
+  .handler(async (agent) => {
     const rewards = await agent.requestGetRewardsSuilend();
 
     return {
@@ -41,7 +43,6 @@ const getRewardsAction: SuiAction<typeof inputSchema> = {
       message: "Rewards fetched successfully",
       rewards,
     };
-  },
-};
+  });
 
 export default getRewardsAction;

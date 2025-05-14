@@ -1,23 +1,23 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 
-const inputSchema = z.object({
+const schema = z.object({
   ticker: z.string(),
 });
 
-const assetAddressFromTickerAction: SuiAction<typeof inputSchema> = {
-  name: "ASSET_ADDRESS_FROM_TICKER_ACTION",
-  similes: [
+const assetAddressFromTickerAction = createActionBuilderFor(SuiAgentKit)
+  .name("ASSET_ADDRESS_FROM_TICKER_ACTION")
+  .similes([
     "get token address",
     "find token address",
     "lookup token address",
     "get coin address",
     "find coin address",
     "get asset contract",
-  ],
-  description: `Get the token address for a given ticker`,
-  examples: [
+  ])
+  .description(`Get the token address for a given ticker`)
+  .examples([
     [
       {
         input: {
@@ -45,9 +45,9 @@ const assetAddressFromTickerAction: SuiAction<typeof inputSchema> = {
         explanation: "Get the token address for the USDC token",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit, input) => {
+  ])
+  .schema(schema)
+  .handler(async (agent, input) => {
     const assetAddress = await agent.getAssetAddressFromTicker(input.ticker);
 
     return {
@@ -55,7 +55,6 @@ const assetAddressFromTickerAction: SuiAction<typeof inputSchema> = {
       message: "Asset address fetched successfully",
       assetAddress,
     };
-  },
-};
+  });
 
 export default assetAddressFromTickerAction;

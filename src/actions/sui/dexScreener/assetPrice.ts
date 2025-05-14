@@ -1,24 +1,26 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 
-const inputSchema = z.object({
+const schema = z.object({
   coinType: z.string(),
 });
 
-const assetPriceAction: SuiAction<typeof inputSchema> = {
-  name: "ASSET_PRICE_ACTION",
-  similes: [
+const assetPriceAction = createActionBuilderFor(SuiAgentKit)
+  .name("ASSET_PRICE_ACTION")
+  .similes([
     "get token price",
     "check token price",
     "view token price",
     "get coin price",
     "check coin price",
     "get asset value",
-  ],
-  description: `Get the token price for a given coin type address.
+  ])
+  .description(
+    `Get the token price for a given coin type address.
     The response price is in USDC value.`,
-  examples: [
+  )
+  .examples([
     [
       {
         input: {
@@ -46,9 +48,9 @@ const assetPriceAction: SuiAction<typeof inputSchema> = {
         explanation: "Get the price of SUI token in USDC",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit, input) => {
+  ])
+  .schema(schema)
+  .handler(async (agent, input) => {
     const assetPrice = await agent.requestGetAssetPrice(input.coinType);
 
     return {
@@ -56,7 +58,6 @@ const assetPriceAction: SuiAction<typeof inputSchema> = {
       message: "Asset price fetched successfully",
       assetPrice,
     };
-  },
-};
+  });
 
 export default assetPriceAction;

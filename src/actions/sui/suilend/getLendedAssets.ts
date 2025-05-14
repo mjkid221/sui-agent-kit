@@ -1,22 +1,24 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 
-const inputSchema = z.object({});
+const schema = z.object({});
 
-const getLendedAssetsAction: SuiAction<typeof inputSchema> = {
-  name: "GET_LENDED_ASSETS_SUILEND_ACTION",
-  similes: [
+const getLendedAssetsAction = createActionBuilderFor(SuiAgentKit)
+  .name("GET_LENDED_ASSETS_SUILEND_ACTION")
+  .similes([
     "get lended assets",
     "show lended tokens",
     "view supplied assets",
     "check deposited tokens",
     "list lended coins",
     "view lending positions",
-  ],
-  description: `Get the list of lended assets in the suilend protocol. 
+  ])
+  .description(
+    `Get the list of lended assets in the suilend protocol. 
     cTokenAmount is the amount of the interest bearing token of the asset.`,
-  examples: [
+  )
+  .examples([
     [
       {
         input: {},
@@ -38,9 +40,9 @@ const getLendedAssetsAction: SuiAction<typeof inputSchema> = {
         explanation: "Get list of all assets currently lended on SuiLend",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit) => {
+  ])
+  .schema(schema)
+  .handler(async (agent) => {
     const assets = await agent.requestGetCurrentLendedAssetsSuilend();
 
     return {
@@ -48,7 +50,6 @@ const getLendedAssetsAction: SuiAction<typeof inputSchema> = {
       message: "Assets fetched successfully",
       assets,
     };
-  },
-};
+  });
 
 export default getLendedAssetsAction;

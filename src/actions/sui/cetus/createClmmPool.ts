@@ -1,8 +1,8 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 
-const inputSchema = z.object({
+const schema = z.object({
   coinTypeA: z.string(),
   coinTypeADepositAmount: z.number(),
   coinTypeB: z.string(),
@@ -18,30 +18,31 @@ const inputSchema = z.object({
   slippagePercentage: z.number(),
 });
 
-const createClmmPoolAction: SuiAction<typeof inputSchema> = {
-  name: "CREATE_CLMM_POOL_CETUS_ACTION",
-  similes: [
-    "create liquidity pool",
+const createClmmPoolAction = createActionBuilderFor(SuiAgentKit)
+  .name("CREATE_CLMM_POOL_CETUS_ACTION")
+  .similes([
     "create new pool",
-    "setup trading pool",
+    "create liquidity pool",
     "initialize pool",
-    "create Cetus pool",
+    "set up new pool",
     "start new pool",
-  ],
-  description: `Create a new liquidity pool on Cetus with initial liquidity. 
+    "create cetus pool",
+  ])
+  .description(
+    `Create a new CLMM pool on Cetus. This will create a new pool with the specified coins and parameters.
     CoinTypeA is the coin type of the first asset to be deposited into the pool.
     CoinTypeB is the coin type of the second asset to be deposited into the pool.
     InitialPrice is the initial price of the pool in relative to CoinTypeB.
     FeeTier is the fee tier of the pool. 1 = 2 bps, 5 = 10 bps, 10 = 20 bps, 25 = 60 bps, 100 = 200 bps, 200 = 220 bps.
     SlippagePercentage is the slippage percentage of the pool.`,
-  examples: [
+  )
+  .examples([
     [
       {
         input: {
           coinTypeA: "0x2::sui::SUI",
           coinTypeADepositAmount: 1,
-          coinTypeB:
-            "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC",
+          coinTypeB: "0x123::usdc::USDC",
           initialPrice: 0.00000004,
           feeTier: 10,
           slippagePercentage: 5,
@@ -55,9 +56,9 @@ const createClmmPoolAction: SuiAction<typeof inputSchema> = {
         explanation: "Create a new SUI/USDC pool with initial liquidity",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit, input) => {
+  ])
+  .schema(schema)
+  .handler(async (agent, input) => {
     const poolData = await agent.requestCreateClmmPoolCetus(
       input.coinTypeA,
       input.coinTypeADepositAmount,
@@ -73,7 +74,6 @@ const createClmmPoolAction: SuiAction<typeof inputSchema> = {
       transaction: poolData.txDigest,
       ...poolData,
     };
-  },
-};
+  });
 
 export default createClmmPoolAction;

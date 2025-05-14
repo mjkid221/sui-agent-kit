@@ -1,26 +1,28 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 import { safeParseDomainName } from "@/tools/sui";
 
-const inputSchema = z.object({
+const schema = z.object({
   name: z.string(),
   years: z.number(),
 });
 
-const registerDomainAction: SuiAction<typeof inputSchema> = {
-  name: "REGISTER_DOMAIN_ACTION",
-  similes: [
+const registerDomainAction = createActionBuilderFor(SuiAgentKit)
+  .name("REGISTER_DOMAIN_ACTION")
+  .similes([
     "register domain",
     "buy domain",
     "get domain name",
     "purchase domain",
     "register .sui domain",
     "acquire domain",
-  ],
-  description: `Register a .sui domain name for your wallet.
+  ])
+  .description(
+    `Register a .sui domain name for your wallet.
     The input name can be suffixed with .sui or not. The function will automatically add .sui if it is not present.`,
-  examples: [
+  )
+  .examples([
     [
       {
         input: {
@@ -51,9 +53,9 @@ const registerDomainAction: SuiAction<typeof inputSchema> = {
         explanation: "Register a new .sui domain name for 2 years",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit, input) => {
+  ])
+  .schema(schema)
+  .handler(async (agent, input) => {
     const tx = await agent.requestRegisterDomain(input.name, input.years);
 
     return {
@@ -62,7 +64,6 @@ const registerDomainAction: SuiAction<typeof inputSchema> = {
       transaction: tx,
       domain: safeParseDomainName(input.name),
     };
-  },
-};
+  });
 
 export default registerDomainAction;

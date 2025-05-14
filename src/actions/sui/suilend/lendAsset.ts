@@ -1,20 +1,27 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 
-const lendAssetAction: SuiAction = {
-  name: "LEND_ASSET_SUILEND_ACTION",
-  similes: [
+const schema = z.object({
+  amount: z.number(),
+  coinType: z.string(),
+});
+
+const lendAssetAction = createActionBuilderFor(SuiAgentKit)
+  .name("LEND_ASSET_SUILEND_ACTION")
+  .similes([
     "lend asset",
     "deposit asset",
     "supply asset",
     "provide liquidity",
     "deposit tokens",
     "lend tokens",
-  ],
-  description: `Lend an asset to the suilend protocol. Amount input is amount of asset to lend/deposit without decimals.
+  ])
+  .description(
+    `Lend an asset to the suilend protocol. Amount input is amount of asset to lend/deposit without decimals.
     CoinType input is the coin type (address) of the asset to lend/deposit. An array of supported coin types can be retrieved by using the get reserves action.`,
-  examples: [
+  )
+  .examples([
     [
       {
         input: {
@@ -44,15 +51,9 @@ const lendAssetAction: SuiAction = {
         explanation: "Lend 0.1 SUI to the SuiLend protocol",
       },
     ],
-  ],
-  schema: z.object({
-    amount: z.number(),
-    coinType: z.string(),
-  }),
-  handler: async (
-    agent: SuiAgentKit,
-    input: { amount: number; coinType: string },
-  ) => {
+  ])
+  .schema(schema)
+  .handler(async (agent, input) => {
     const tx = await agent.requestLendAssetSuilend(
       input.amount,
       input.coinType,
@@ -63,7 +64,6 @@ const lendAssetAction: SuiAction = {
       message: "Asset lent successfully",
       transaction: tx,
     };
-  },
-};
+  });
 
 export default lendAssetAction;

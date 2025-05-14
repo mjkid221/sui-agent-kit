@@ -1,30 +1,32 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 
-const inputSchema = z.object({
+const schema = z.object({
   outputCoinType: z.string(),
   inputAmount: z.number(),
   inputCoinType: z.string(),
   slippageBps: z.number().optional(),
 });
 
-const tradeAction: SuiAction<typeof inputSchema> = {
-  name: "TRADE_COIN_ACTION",
-  similes: [
+const tradeAction = createActionBuilderFor(SuiAgentKit)
+  .name("TRADE_COIN_ACTION")
+  .similes([
     "swap tokens",
     "exchange coins",
     "convert tokens",
     "trade assets",
     "swap coins",
     "exchange tokens",
-  ],
-  description: `Trade (swap) coins from one coin to another. 
+  ])
+  .description(
+    `Trade (swap) coins from one coin to another. 
     Make sure inputCoinType and outputCoinType are not the same.
     Slippage is the percentage of the input amount that is allowed to be lost in the trade.
     Slippage is in basis points (10000 = 1%). Use 10000 as default unless the user specifies a different value.
     Input amount is the amount of the input coin to be swapped without decimals.`,
-  examples: [
+  )
+  .examples([
     [
       {
         input: {
@@ -66,9 +68,9 @@ const tradeAction: SuiAction<typeof inputSchema> = {
         explanation: "Swap 100 USDC for SUI with 0.5% slippage",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit, input) => {
+  ])
+  .schema(schema)
+  .handler(async (agent, input) => {
     const tx = await agent.requestTrade(
       input.outputCoinType,
       input.inputAmount,
@@ -84,7 +86,6 @@ const tradeAction: SuiAction<typeof inputSchema> = {
       inputCoinType: input.inputCoinType,
       outputCoinType: input.outputCoinType,
     };
-  },
-};
+  });
 
 export default tradeAction;

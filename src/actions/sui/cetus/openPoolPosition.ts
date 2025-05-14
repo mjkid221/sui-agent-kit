@@ -1,8 +1,8 @@
 import { SuiAgentKit } from "@/agent/sui";
-import { SuiAction } from "@/types/action";
 import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
 
-const inputSchema = z.object({
+const schema = z.object({
   poolId: z.string(),
   coinTypeA: z.string(),
   amountA: z.number(),
@@ -10,20 +10,22 @@ const inputSchema = z.object({
   existingPositionId: z.string().optional(),
 });
 
-const openPoolPositionAction: SuiAction<typeof inputSchema> = {
-  name: "OPEN_POOL_POSITION_CETUS_ACTION",
-  similes: [
+const openPoolPositionAction = createActionBuilderFor(SuiAgentKit)
+  .name("OPEN_POOL_POSITION_CETUS_ACTION")
+  .similes([
     "add liquidity",
     "provide liquidity",
     "open LP position",
     "create pool position",
     "join pool",
     "deposit to pool",
-  ],
-  description: `Open a pool position on Cetus. If creating a new position, the poolId is required. If adding liquidity to an existing position, the existingPositionId is required.
+  ])
+  .description(
+    `Open a pool position on Cetus. If creating a new position, the poolId is required. If adding liquidity to an existing position, the existingPositionId is required.
     poolId and existingPositionId can be found in the pool object returned by the get all pool position action if the user wants to add to existing position. 
     poolId can also be found in the pool object returned by the get pool by coins action.`,
-  examples: [
+  )
+  .examples([
     [
       {
         input: {
@@ -59,9 +61,9 @@ const openPoolPositionAction: SuiAction<typeof inputSchema> = {
         explanation: "Add liquidity to an existing position",
       },
     ],
-  ],
-  schema: inputSchema,
-  handler: async (agent: SuiAgentKit, input) => {
+  ])
+  .schema(schema)
+  .handler(async (agent, input) => {
     const result = await agent.requestOpenPoolPositionCetus(
       input.poolId,
       input.coinTypeA,
@@ -76,7 +78,6 @@ const openPoolPositionAction: SuiAction<typeof inputSchema> = {
       // Use the result directly without assuming its structure
       result,
     };
-  },
-};
+  });
 
 export default openPoolPositionAction;

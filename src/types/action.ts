@@ -14,16 +14,16 @@ export interface ActionExample {
 /**
  * Handler function type for executing the action
  */
-export type Handler<T extends BaseAgentKitClass> = (
+export type Handler<T extends BaseAgentKitClass, Schema> = (
   agent: T,
-  input: Record<string, any>,
+  input: Schema,
 ) => Promise<Record<string, any>>;
 
 /**
  * Main Action interface inspired by ELIZA and Solana Agent Kit
  * This interface makes it easier to implement actions across different frameworks
  */
-export interface Action<T extends BaseAgentKitClass> {
+export interface Action<T extends BaseAgentKitClass, Schema> {
   /**
    * Unique name of the action
    */
@@ -48,27 +48,29 @@ export interface Action<T extends BaseAgentKitClass> {
   /**
    * Zod schema for input validation
    */
-  schema: z.ZodType<any>;
+  schema: z.ZodType<Schema>;
 
   /**
    * Function that executes the action
    */
-  handler: Handler<T>;
+  handler: Handler<T, Schema>;
 }
 
-export type SuiAction<TSchema extends z.ZodType = z.ZodType> = {
-  name: string;
-  similes: string[];
-  description: string;
-  examples: Array<
-    [
-      {
-        input: z.infer<TSchema>;
-        output: any;
-        explanation: string;
-      },
-    ]
-  >;
-  schema: TSchema;
-  handler: (agent: SuiAgentKit, input: z.infer<TSchema>) => Promise<any>;
-};
+export type SuiAction<Schema = any> = Action<SuiAgentKit, Schema>;
+
+/**
+ * ActionBuilder interface for creating actions in a chainable way
+ */
+export interface ActionBuilder<T extends BaseAgentKitClass, Schema = any> {
+  name(name: string): ActionBuilder<T, Schema>;
+  similes(similes: string[]): ActionBuilder<T, Schema>;
+  description(description: string): ActionBuilder<T, Schema>;
+  examples(examples: ActionExample[][]): ActionBuilder<T, Schema>;
+  schema<S>(schema: z.ZodType<S>): ActionBuilder<T, S>;
+  handler<S = Schema>(handler: Handler<T, S>): Action<T, S>;
+}
+
+/**
+ * SuiActionBuilder - specialized for SuiAgentKit
+ */
+export type SuiActionBuilder<Schema = any> = ActionBuilder<SuiAgentKit, Schema>;
