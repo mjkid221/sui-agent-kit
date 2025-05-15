@@ -1,8 +1,5 @@
-import { z } from "zod";
 import { SuiAgentKit } from "@/agent/sui";
 import { createActionBuilderFor } from "../createAction";
-
-const schema = z.object({});
 
 const requestFundsAction = createActionBuilderFor(SuiAgentKit)
   .name("REQUEST_FUNDS")
@@ -26,7 +23,6 @@ const requestFundsAction = createActionBuilderFor(SuiAgentKit)
       },
     ],
   ])
-  .schema(schema)
   .handler(async (agent) => {
     await agent.requestFaucetFunds();
 

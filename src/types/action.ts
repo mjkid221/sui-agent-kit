@@ -1,29 +1,19 @@
 import { z } from "zod";
 import { BaseAgentKitClass } from "./agent";
-import { SuiAgentKit } from "@/agent/sui";
 
 /**
  * Example of an action with input and output
  */
 export interface ActionExample {
-  input: Record<string, any>;
-  output: Record<string, any>;
+  input: Record<string, unknown>;
+  output: Record<string, unknown>;
   explanation: string;
 }
 
 /**
- * Handler function type for executing the action
+ * Common properties shared by all actions
  */
-export type Handler<T extends BaseAgentKitClass, Schema> = (
-  agent: T,
-  input: Schema,
-) => Promise<Record<string, any>>;
-
-/**
- * Main Action interface inspired by ELIZA and Solana Agent Kit
- * This interface makes it easier to implement actions across different frameworks
- */
-export interface Action<T extends BaseAgentKitClass, Schema> {
+export interface ActionBase<Schema = z.ZodType<unknown>> {
   /**
    * Unique name of the action
    */
@@ -46,31 +36,46 @@ export interface Action<T extends BaseAgentKitClass, Schema> {
   examples: ActionExample[][];
 
   /**
-   * Zod schema for input validation
+   * Optional Zod schema for input validation
    */
-  schema: z.ZodType<Schema>;
+  schema?: z.ZodType<Schema>;
+}
 
-  /**
-   * Function that executes the action
-   */
+/**
+ * Unified handler function type with conditional input parameter based on Schema
+ */
+export type Handler<
+  T extends BaseAgentKitClass,
+  Schema = undefined,
+> = Schema extends undefined
+  ? (agent: T) => Promise<Record<string, unknown>>
+  : (agent: T, input: Schema) => Promise<Record<string, unknown>>;
+
+/**
+ * Main Action interface with conditional handler type based on schema presence
+ */
+export type Action<
+  T extends BaseAgentKitClass,
+  Schema = unknown,
+> = ActionBase<Schema> & {
   handler: Handler<T, Schema>;
-}
-
-export type SuiAction<Schema = any> = Action<SuiAgentKit, Schema>;
+};
 
 /**
- * ActionBuilder interface for creating actions in a chainable way
+ * Interface for action builder with common methods
  */
-export interface ActionBuilder<T extends BaseAgentKitClass, Schema = any> {
-  name(name: string): ActionBuilder<T, Schema>;
-  similes(similes: string[]): ActionBuilder<T, Schema>;
-  description(description: string): ActionBuilder<T, Schema>;
-  examples(examples: ActionExample[][]): ActionBuilder<T, Schema>;
+export interface ActionBuilderBase<T extends BaseAgentKitClass, B> {
+  name(name: string): B;
+  similes(similes: string[]): B;
+  description(description: string): B;
+  examples(examples: ActionExample[][]): B;
   schema<S>(schema: z.ZodType<S>): ActionBuilder<T, S>;
-  handler<S = Schema>(handler: Handler<T, S>): Action<T, S>;
 }
 
 /**
- * SuiActionBuilder - specialized for SuiAgentKit
+ * ActionBuilder interface with schema support and conditional handler typing
  */
-export type SuiActionBuilder<Schema = any> = ActionBuilder<SuiAgentKit, Schema>;
+export interface ActionBuilder<T extends BaseAgentKitClass, Schema = undefined>
+  extends ActionBuilderBase<T, ActionBuilder<T, Schema>> {
+  handler: (handler: Handler<T, Schema>) => Action<T, Schema>;
+}
