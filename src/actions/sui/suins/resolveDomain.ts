@@ -1,6 +1,7 @@
 import { SuiAgentKit } from "@/agent/sui";
 import { z } from "zod";
 import { createActionBuilderFor } from "../createAction";
+import { requestResolveDomain } from "@/tools/sui/suins/requestResolveDomain";
 
 const schema = z.object({
   name: z.string(),
@@ -53,7 +54,7 @@ const resolveDomainAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent, input) => {
-    const walletAddress = await agent.requestResolveDomain(input.name);
+    const walletAddress = await requestResolveDomain(agent, input.name);
 
     return {
       status: "success",

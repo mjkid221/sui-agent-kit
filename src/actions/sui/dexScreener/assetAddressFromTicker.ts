@@ -1,6 +1,8 @@
 import { SuiAgentKit } from "@/agent/sui";
 import { z } from "zod";
 import { createActionBuilderFor } from "../createAction";
+import { getTokenAddressFromTicker } from "@/lib/helpers/token";
+import { ChainIdentifier } from "@/types/chain";
 
 const schema = z.object({
   ticker: z.string(),
@@ -48,7 +50,10 @@ const assetAddressFromTickerAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent, input) => {
-    const assetAddress = await agent.getAssetAddressFromTicker(input.ticker);
+    const assetAddress = await getTokenAddressFromTicker(
+      input.ticker,
+      ChainIdentifier.SUI,
+    );
 
     return {
       status: "success",

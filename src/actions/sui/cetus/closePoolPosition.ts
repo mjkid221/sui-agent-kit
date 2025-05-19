@@ -37,7 +37,7 @@ const closePoolPositionAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent, input) => {
-    await agent.requestClosePoolPositionCetus(input.positionId);
+    await agent.cetusPoolManager.closePoolPosition(input.positionId);
 
     return {
       status: "success",

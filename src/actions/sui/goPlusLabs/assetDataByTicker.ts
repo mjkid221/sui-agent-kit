@@ -2,6 +2,8 @@ import { SuiAgentKit } from "@/agent/sui";
 import { z } from "zod";
 import { createActionBuilderFor } from "../createAction";
 import { formatGoPlusLabsSuiTokenData } from "@/tools/sui/goPlusLabs";
+import { getTokenDataByTicker } from "@/lib/helpers/token";
+import { ChainIdentifier } from "@/types/chain";
 
 const schema = z.object({
   ticker: z.string(),
@@ -66,7 +68,7 @@ const assetDataByTickerAction = createActionBuilderFor(SuiAgentKit)
   .schema(schema)
   .handler(async (agent, input) => {
     const formattedAssetData = formatGoPlusLabsSuiTokenData(
-      await agent.requestAssetDataByTicker(input.ticker),
+      await getTokenDataByTicker(input.ticker, ChainIdentifier.SUI),
     );
 
     return {

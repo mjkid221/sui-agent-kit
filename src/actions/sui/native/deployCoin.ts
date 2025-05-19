@@ -1,6 +1,7 @@
 import { SuiAgentKit } from "@/agent/sui";
 import { z } from "zod";
 import { createActionBuilderFor } from "../createAction";
+import { requestDeployCoin } from "@/tools/sui/native/requestDeployCoin";
 
 const schema = z.object({
   name: z.string(),
@@ -75,7 +76,7 @@ const deployCoinAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent, input) => {
-    const coinType = await agent.requestDeployCoin(input);
+    const coinType = await requestDeployCoin(agent, input);
 
     return {
       status: "success",

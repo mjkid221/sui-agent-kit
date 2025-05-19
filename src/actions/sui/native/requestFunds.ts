@@ -1,5 +1,6 @@
 import { SuiAgentKit } from "@/agent/sui";
 import { createActionBuilderFor } from "../createAction";
+import { requestFaucetFunds } from "@/tools/sui/native/requestFaucetFunds";
 
 const requestFundsAction = createActionBuilderFor(SuiAgentKit)
   .name("REQUEST_FUNDS")
@@ -24,7 +25,7 @@ const requestFundsAction = createActionBuilderFor(SuiAgentKit)
     ],
   ])
   .handler(async (agent) => {
-    await agent.requestFaucetFunds();
+    await requestFaucetFunds(agent);
 
     return {
       status: "success",

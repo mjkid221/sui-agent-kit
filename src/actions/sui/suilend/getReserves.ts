@@ -36,7 +36,7 @@ const getReservesAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent) => {
-    const reserves = await agent.requestSuilendReserves();
+    const reserves = await agent.suilendService.getReserves();
 
     return {
       status: "success",

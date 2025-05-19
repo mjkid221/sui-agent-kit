@@ -34,7 +34,7 @@ const agentWalletAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent) => {
-    const walletAddress = await agent.requestAgentWalletAddress();
+    const walletAddress = agent.wallet.publicKey.toSuiAddress();
 
     return {
       status: "success",

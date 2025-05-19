@@ -75,7 +75,7 @@ const getPoolByCoinsAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent, input) => {
-    const poolData = await agent.requestGetPoolByCoinsCetus(
+    const poolData = await agent.cetusPoolManager.getPoolByCoins(
       input.coinTypeA,
       input.coinTypeB,
       input.feeTierFilter,

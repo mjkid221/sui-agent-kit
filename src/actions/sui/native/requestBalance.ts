@@ -1,6 +1,8 @@
 import { SuiAgentKit } from "@/agent/sui";
 import { z } from "zod";
 import { createActionBuilderFor } from "../createAction";
+import { requestCoinBalance } from "@/tools/sui/native/requestCoinBalance";
+import { getCoinDecimals } from "@/tools/sui/native/requestCoinBalance/getCoinDecimals";
 
 const schema = z.object({
   coinType: z.string().optional(),
@@ -52,7 +54,8 @@ const tokenBalanceAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent, input) => {
-    const balance = await agent.requestGetBalance(
+    const balance = await requestCoinBalance(
+      agent,
       input.coinType,
       input.walletAddress,
     );

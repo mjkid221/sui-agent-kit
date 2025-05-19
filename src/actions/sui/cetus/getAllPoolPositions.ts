@@ -42,7 +42,7 @@ const getAllPoolPositionsAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent) => {
-    const positions = await agent.requestGetAllPoolPositionsCetus();
+    const positions = await agent.cetusPoolManager.getPoolPositions();
 
     return {
       status: "success",

@@ -32,7 +32,7 @@ const claimAllRewardsAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent) => {
-    const tx = await agent.requestClaimAllRewardsSuilend();
+    const tx = await agent.suilendService.claimAllRewards();
 
     return {
       status: "success",

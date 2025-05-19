@@ -51,7 +51,7 @@ const withdrawLendedAssetAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent, input) => {
-    const tx = await agent.requestWithdrawLendedAssetSuilend(input.coinType);
+    const tx = await agent.suilendService.withdrawAsset(input.coinType);
 
     return {
       status: "success",

@@ -36,7 +36,7 @@ const getRewardsAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent) => {
-    const rewards = await agent.requestGetRewardsSuilend();
+    const rewards = (await agent.suilendService.getRewards()).availableRewards;
 
     return {
       status: "success",

@@ -1,7 +1,10 @@
 import { SuiAgentKit } from "@/agent/sui";
 import { z } from "zod";
 import { createActionBuilderFor } from "../createAction";
-import { safeParseDomainName } from "@/tools/sui";
+import {
+  requestRegisterDomain,
+  safeParseDomainName,
+} from "@/tools/sui/suins/requestRegisterDomain";
 
 const schema = z.object({
   name: z.string(),
@@ -56,7 +59,7 @@ const registerDomainAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent, input) => {
-    const tx = await agent.requestRegisterDomain(input.name, input.years);
+    const tx = await requestRegisterDomain(agent, input.name, input.years);
 
     return {
       status: "success",

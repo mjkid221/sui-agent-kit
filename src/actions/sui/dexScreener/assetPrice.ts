@@ -1,6 +1,8 @@
 import { SuiAgentKit } from "@/agent/sui";
 import { z } from "zod";
 import { createActionBuilderFor } from "../createAction";
+import { getTokenPriceByAddress } from "@/lib/helpers/token";
+import { ChainIdentifier } from "@/types/chain";
 
 const schema = z.object({
   coinType: z.string(),
@@ -51,7 +53,10 @@ const assetPriceAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent, input) => {
-    const assetPrice = await agent.requestGetAssetPrice(input.coinType);
+    const assetPrice = await getTokenPriceByAddress(
+      input.coinType,
+      ChainIdentifier.SUI,
+    );
 
     return {
       status: "success",

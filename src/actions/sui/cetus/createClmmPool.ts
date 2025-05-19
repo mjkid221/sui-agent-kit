@@ -59,7 +59,7 @@ const createClmmPoolAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent, input) => {
-    const poolData = await agent.requestCreateClmmPoolCetus(
+    const poolData = await agent.cetusPoolManager.createClmmPool(
       input.coinTypeA,
       input.coinTypeADepositAmount,
       input.coinTypeB,

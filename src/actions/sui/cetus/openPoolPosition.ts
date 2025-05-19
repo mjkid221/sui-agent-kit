@@ -64,7 +64,7 @@ const openPoolPositionAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent, input) => {
-    const result = await agent.requestOpenPoolPositionCetus(
+    const result = await agent.cetusPoolManager.openPositionAndAddLiquidity(
       input.poolId,
       input.coinTypeA,
       input.amountA,

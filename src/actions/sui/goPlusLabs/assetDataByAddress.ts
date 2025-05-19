@@ -2,6 +2,8 @@ import { SuiAgentKit } from "@/agent/sui";
 import { z } from "zod";
 import { createActionBuilderFor } from "../createAction";
 import { formatGoPlusLabsSuiTokenData } from "@/tools/sui/goPlusLabs";
+import { getTokenDataByAddress } from "@/lib/helpers/token";
+import { ChainIdentifier } from "@/types/chain";
 
 const schema = z.object({
   coinType: z.string(),
@@ -65,7 +67,7 @@ const assetDataByAddressAction = createActionBuilderFor(SuiAgentKit)
   .schema(schema)
   .handler(async (agent, input) => {
     const formattedAssetData = formatGoPlusLabsSuiTokenData(
-      await agent.requestAssetDataByCoinType(input.coinType),
+      await getTokenDataByAddress(input.coinType, ChainIdentifier.SUI),
     );
 
     return {

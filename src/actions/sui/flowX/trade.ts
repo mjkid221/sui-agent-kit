@@ -1,6 +1,7 @@
 import { SuiAgentKit } from "@/agent/sui";
 import { z } from "zod";
 import { createActionBuilderFor } from "../createAction";
+import { requestTrade } from "@/tools/sui/flowX/requestTrade";
 
 const schema = z.object({
   outputCoinType: z.string(),
@@ -71,7 +72,8 @@ const tradeAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent, input) => {
-    const tx = await agent.requestTrade(
+    const tx = await requestTrade(
+      agent,
       input.outputCoinType,
       input.inputAmount,
       input.inputCoinType,

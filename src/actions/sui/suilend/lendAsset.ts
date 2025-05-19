@@ -54,7 +54,7 @@ const lendAssetAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent, input) => {
-    const tx = await agent.requestLendAssetSuilend(
+    const tx = await agent.suilendService.depositAsset(
       input.amount,
       input.coinType,
     );

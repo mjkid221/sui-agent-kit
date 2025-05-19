@@ -1,6 +1,7 @@
 import { SuiAgentKit } from "@/agent/sui";
 import { z } from "zod";
 import { createActionBuilderFor } from "../createAction";
+import { requestTransferCoin } from "@/tools/sui/native/requestTransferCoin";
 
 const schema = z.object({
   amount: z.number(),
@@ -63,9 +64,10 @@ const transferAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent, input) => {
-    const tx = await agent.requestTransferCoinOrToken(
-      input.amount,
+    const tx = await requestTransferCoin(
+      agent,
       input.to,
+      input.amount,
       input.coinType,
     );
 

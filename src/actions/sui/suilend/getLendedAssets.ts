@@ -43,7 +43,7 @@ const getLendedAssetsAction = createActionBuilderFor(SuiAgentKit)
   ])
   .schema(schema)
   .handler(async (agent) => {
-    const assets = await agent.requestGetCurrentLendedAssetsSuilend();
+    const assets = await agent.suilendService.getDeposits();
 
     return {
       status: "success",
