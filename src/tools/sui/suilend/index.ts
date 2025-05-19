@@ -21,6 +21,7 @@ import { SuilendServiceInterface } from "./SuilendServiceClass";
 import { isDeprecated, isSendPoints } from "@suilend/frontend-sui";
 import BigNumber from "bignumber.js";
 import sanitizeAddress from "@/lib/utils/address/sanitizeAddress";
+import { getCoinDecimals } from "../native/requestCoinBalance/getCoinDecimals";
 
 export class SuilendService
   extends BaseCacheStore
@@ -68,7 +69,7 @@ export class SuilendService
       throw new Error("Coin type is not a supported suilend asset");
     }
     const transaction = new Transaction();
-    const decimals = await this.agent.requestGetCoinDecimals(coinType);
+    const decimals = await getCoinDecimals(this.agent, coinType);
     const { obligationOwnerCaps } = await this.initializeObligation();
 
     const obligationOwnerCap = obligationOwnerCaps[0];

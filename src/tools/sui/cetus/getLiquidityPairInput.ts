@@ -7,6 +7,7 @@ import {
   LiquidityInputWithExistingPool,
   LiquidityInputWithNewPool,
 } from "./types";
+import { getCoinDecimals } from "../native/requestCoinBalance/getCoinDecimals";
 
 export async function getEstimatedLiquidityFromPool(
   cetusPM: CetusPoolManager,
@@ -28,7 +29,8 @@ export async function getEstimatedLiquidityFromPool(
   const [coinTypeA, coinTypeB] = sortAddresses(coinTypes[0], coinTypes[1]);
   const isFixedAmount = coinTypeA === inputCoinType;
 
-  const coinTypeDecimals = await cetusPM.agent.requestGetCoinDecimals(
+  const coinTypeDecimals = await getCoinDecimals(
+    cetusPM.agent,
     isFixedAmount ? coinTypeA : coinTypeB,
   );
   const curSqrtPrice = new BN(pool.current_sqrt_price);
@@ -81,8 +83,8 @@ export async function getEstimatedLiquidityFromParams(
 ): Promise<LiquidityInputWithNewPool> {
   const [coinA, coinB] = sortAddresses(coinTypeA, coinTypeB);
   const [coinTypeADecimals, coinTypeBDecimals] = await Promise.all([
-    cetusPM.agent.requestGetCoinDecimals(coinA),
-    cetusPM.agent.requestGetCoinDecimals(coinB),
+    getCoinDecimals(cetusPM.agent, coinA),
+    getCoinDecimals(cetusPM.agent, coinB),
   ]);
   const coinMetadataAPromise = cetusPM.agent.client.getCoinMetadata({
     coinType: coinTypeA,

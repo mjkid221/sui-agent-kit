@@ -1,8 +1,10 @@
-import { TokenCreationInterface } from "@/tools/sui/native/requestDeployCoin/types";
-import { BaseAgentKitClass } from "./BaseAgentKitClass";
 import { SuinsClient } from "@/tools/sui";
 import { SuiClient } from "@mysten/sui/client";
 import { CacheStoreConfig } from "@/lib/classes/cache/types";
+import { BaseAgentKitClass } from "./BaseAgentKitClass";
+import { SuiWallet } from "../wallet/SuiWallet";
+import { CetusPoolManager } from "@/tools/sui/cetus";
+import { SuilendService } from "@/tools/sui/suilend";
 
 export type SuiAgentConfig = {
   /**
@@ -76,29 +78,13 @@ export type SuiAgentConfig = {
   cache?: CacheStoreConfig;
 };
 
-export interface SuiAgentKitClass extends BaseAgentKitClass {
+/**
+ * Sui-specific implementation of the agent kit
+ */
+export interface SuiAgentKitClass extends BaseAgentKitClass<SuiWallet> {
   client: SuiClient;
   suinsClient: SuinsClient;
+  cetusPoolManager: CetusPoolManager;
+  suilendService: SuilendService;
   config: SuiAgentConfig;
-
-  /**
-   * @param tokenInfo - The information of the token to be deployed
-   * @param tokenInfo.name - The name of the token
-   * @param tokenInfo.symbol - The symbol of the token
-   * @param tokenInfo.decimals - The decimals of the token
-   * @param tokenInfo.totalSupply - The total supply of the token. E.g. 1_000_000_000 for 1B
-   * @param tokenInfo.fixedSupply - Whether the token is fixed supply
-   * @param tokenInfo.description - The description of the token
-   * @param feeConfig - Optional configuration for fees
-   * @param feeConfig.treasury - The address of the treasury
-   * @param feeConfig.fee - The fee of the transaction. E.g. 1_000_000_000 for 1 SUI
-   * @returns The module address
-   */
-  requestDeployCoin(
-    tokenInfo: TokenCreationInterface,
-    feeConfig?: {
-      treasury: string;
-      fee: number;
-    },
-  ): Promise<string>;
 }

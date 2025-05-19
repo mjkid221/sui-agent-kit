@@ -2,7 +2,6 @@ import { ChatOpenAI } from "@langchain/openai";
 import { SuiAgentKit } from "../agent/sui";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { MemorySaver } from "@langchain/langgraph";
-import { createSuiTools } from "../langchain/sui";
 import * as readline from "readline";
 import { HumanMessage } from "@langchain/core/messages";
 import dotenv from "dotenv";
@@ -12,6 +11,7 @@ import { CacheStoreType } from "@/lib/classes/cache/types";
 import { SuiKeypairWallet } from "@/lib/utils/keypairs/SuiKeypairWallet";
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { getFullnodeUrl } from "@mysten/sui/client";
+import { createLangchainTools } from "@/langchain";
 
 dotenv.config();
 const env = getEnv();
@@ -53,8 +53,9 @@ async function initializeAgent() {
       },
     );
 
+    // TODO: add tools
     // Create Sui-specific tools
-    const tools = createSuiTools(suiAgent);
+    const tools = createLangchainTools<SuiAgentKit>(suiAgent, []);
 
     // Create an LLM Chain
     const llm = new ChatOpenAI({
