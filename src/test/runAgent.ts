@@ -9,6 +9,9 @@ import dotenv from "dotenv";
 import { getEnv } from "./utils/env";
 import { PostgresSaver } from "@langchain/langgraph-checkpoint-postgres";
 import { CacheStoreType } from "@/lib/classes/cache/types";
+import { SuiKeypairWallet } from "@/lib/utils/keypairs/SuiKeypairWallet";
+import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
+import { getFullnodeUrl } from "@mysten/sui/client";
 
 dotenv.config();
 const env = getEnv();
@@ -24,19 +27,31 @@ const agentSetupMessage = `You are helpful agent that can interact with the Sui 
 
 async function initializeAgent() {
   try {
-    const suiAgent = new SuiAgentKit({
-      ed25519PrivateKey: env.SUI_PRIVATE_KEY,
-      agentNetwork: env.AGENT_NETWORK,
-      config: {
-        treasury: env.FEE_TREASURY_ADDRESS,
-        coinDeployFixedFee: env.COIN_DEPLOY_FIXED_FEE,
-        tradeCommissionFeePercentage: env.TRADING_COMMISSION_FEE_PERCENTAGE,
-        cache: {
-          cacheStoreType: CacheStoreType.REDIS,
-          externalDbUrl: env.REDIS_DB_URL!,
+    const { rpc, network } = {
+      rpc: getFullnodeUrl(env.AGENT_NETWORK),
+      network: env.AGENT_NETWORK,
+    };
+    const suiAgent = new SuiAgentKit(
+      new SuiKeypairWallet(Ed25519Keypair.fromSecretKey(env.SUI_PRIVATE_KEY), {
+        rpcUrl: rpc,
+        isSponsored: false,
+      }),
+      {
+        rpc: {
+          url: rpc,
+          network,
         },
+        // commission: {
+        //   treasury: env.FEE_TREASURY_ADDRESS,
+        //   coinDeployFixedFee: env.COIN_DEPLOY_FIXED_FEE,
+        //   tradeCommissionFeePercentage: env.TRADING_COMMISSION_FEE_PERCENTAGE,
+        // },
+        // cache: {
+        //   cacheStoreType: CacheStoreType.REDIS,
+        //   externalDbUrl: env.REDIS_DB_URL!,
+        // },
       },
-    });
+    );
 
     // Create Sui-specific tools
     const tools = createSuiTools(suiAgent);

@@ -1,6 +1,7 @@
 import { Ed25519PublicKey } from "@mysten/sui/keypairs/ed25519";
-import { SuiTransaction } from "../chain/transaction";
-export interface BaseWallet {
+import { Transaction } from "@mysten/sui/transactions";
+
+export interface SuiWallet {
   /**
    * The public key of the connected wallet
    * @type {Ed25519PublicKey}
@@ -13,16 +14,14 @@ export interface BaseWallet {
    * @param {T} transaction - The transaction to be signed
    * @returns {Promise<T>} Promise resolving to the signed transaction
    */
-  signTransaction<T extends SuiTransaction>(transaction: T): Promise<T>;
+  signTransaction?<T extends Transaction>(transaction: T): Promise<T>;
 
   /**
    * Sends a transaction on chain
    * @template T - Transaction type
    * @param {T} transaction - The transaction to be signed and sent
    */
-  sendTransaction?: <T extends SuiTransaction>(
-    transaction: T,
-  ) => Promise<string>;
+  sendTransaction?: <T extends Transaction>(transaction: T) => Promise<string>;
 
   /**
    * Signs and sends a transaction to the network
@@ -31,7 +30,7 @@ export interface BaseWallet {
    * @param {SendOptions} [options] - Optional transaction send configuration
    * @returns {Promise<{digest: string}>} Promise resolving to the transaction digest
    */
-  signAndSendTransaction: <T extends SuiTransaction>(
+  signAndSendTransaction: <T extends Transaction>(
     transaction: T,
   ) => Promise<{ digest: string }>;
 
@@ -39,5 +38,5 @@ export interface BaseWallet {
    * Signs a message
    * @param message - The message to be signed
    */
-  signMessage(message: Uint8Array): Promise<Uint8Array>;
+  signMessage(message: Uint8Array | string): Promise<string>;
 }

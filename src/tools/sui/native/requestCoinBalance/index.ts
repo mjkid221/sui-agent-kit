@@ -6,7 +6,7 @@ export const requestCoinBalance = async (
   walletAddress?: string,
 ): Promise<number> => {
   const balance = await agent.client.getBalance({
-    owner: walletAddress ?? agent.wallet.toSuiAddress(),
+    owner: walletAddress ?? agent.wallet.publicKey.toSuiAddress(),
     coinType,
   });
 

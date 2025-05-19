@@ -69,31 +69,30 @@ export const requestRegisterDomain = async (
 
     suinsTransaction.setTargetAddress({
       nft,
-      address: agent.wallet.toSuiAddress(),
+      address: agent.wallet.publicKey.toSuiAddress(),
       isSubname: false,
     });
 
     // Transfer the name's NFT
     suinsTransaction.transaction.transferObjects(
       [nft],
-      suinsTransaction.transaction.pure.address(agent.wallet.toSuiAddress()),
+      suinsTransaction.transaction.pure.address(
+        agent.wallet.publicKey.toSuiAddress(),
+      ),
     );
 
     // Transfer back the coin object
     suinsTransaction.transaction.transferObjects(
       [coin],
-      suinsTransaction.transaction.pure.address(agent.wallet.toSuiAddress()),
+      suinsTransaction.transaction.pure.address(
+        agent.wallet.publicKey.toSuiAddress(),
+      ),
     );
 
-    const result = await agent.client.signAndExecuteTransaction({
-      signer: agent.wallet,
-      transaction: suinsTransaction.transaction,
-    });
-
-    const response = await agent.client.waitForTransaction({
-      digest: result.digest,
-    });
-    return response.digest;
+    const { digest } = await agent.wallet.signAndSendTransaction(
+      suinsTransaction.transaction,
+    );
+    return digest;
   } catch (err: any) {
     throw new Error(`Domain registration failed: ${err.message}`);
   }

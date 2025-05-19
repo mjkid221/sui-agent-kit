@@ -24,19 +24,20 @@ export const requestDeployCoin = async (
     await initMoveByteCodeTemplate();
     const tx = new Transaction();
 
-    if (agent.config.coinDeployFixedFee) {
-      const feeAmount = agent.config.coinDeployFixedFee * 10 ** SUI_DECIMALS;
+    if (agent.config.commission?.coinDeployFixedFee) {
+      const feeAmount =
+        agent.config.commission.coinDeployFixedFee * 10 ** SUI_DECIMALS;
 
       tx.transferObjects(
         [coinWithBalance({ balance: feeAmount, type: SUI_TYPE_ARG })],
-        tx.pure.address(agent.config.treasury),
+        tx.pure.address(agent.config.commission.treasury),
       );
     }
 
     const bytecode = await getBytecode({
       ...tokenInfo,
       decimals: tokenInfo.decimals ?? 6,
-      recipient: tokenInfo.recipient ?? agent.wallet.toSuiAddress(),
+      recipient: tokenInfo.recipient ?? agent.wallet.publicKey.toSuiAddress(),
     });
 
     const [upgradeCap] = tx.publish({
@@ -46,30 +47,21 @@ export const requestDeployCoin = async (
 
     tx.transferObjects(
       [upgradeCap],
-      tx.pure.address(agent.wallet.toSuiAddress()),
+      tx.pure.address(agent.wallet.publicKey.toSuiAddress()),
     );
 
-    const { digest, balanceChanges } =
-      await agent.client.signAndExecuteTransaction({
-        signer: agent.wallet,
-        transaction: tx,
-        options: {
-          showBalanceChanges: true,
-          showEffects: true,
-          showEvents: true,
-          showInput: true,
-          showObjectChanges: true,
-          showRawInput: false,
-        },
-      });
-
+    const { digest } = await agent.wallet.signAndSendTransaction(tx);
+    const { balanceChanges } = await agent.client.getTransactionBlock({
+      digest,
+      options: {
+        showBalanceChanges: true,
+      },
+    });
     let coinType = "";
     if (balanceChanges instanceof Array) {
       const [, coinBalanceChange] = balanceChanges;
       coinType = coinBalanceChange.coinType;
     }
-
-    await agent.client.waitForTransaction({ digest });
 
     return coinType;
   } catch (error: any) {

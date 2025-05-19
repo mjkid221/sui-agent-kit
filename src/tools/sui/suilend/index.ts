@@ -80,7 +80,7 @@ export class SuilendService
 
     const value = amount * 10 ** decimals;
     await this.suilendClient.depositIntoObligation(
-      this.agent.wallet.toSuiAddress(),
+      this.agent.wallet.publicKey.toSuiAddress(),
       coinType,
       value.toFixed(0),
       transaction,
@@ -89,18 +89,15 @@ export class SuilendService
     if (didCreate) {
       sendObligationToUser(
         obligationOwnerCapId,
-        this.agent.wallet.toSuiAddress(),
+        this.agent.wallet.publicKey.toSuiAddress(),
         transaction,
       );
     }
 
-    const { digest } = await this.agent.client.signAndExecuteTransaction({
-      transaction,
-      signer: this.agent.wallet,
-    });
+    const { digest } =
+      await this.agent.wallet.signAndSendTransaction(transaction);
 
-    const response = await this.agent.client.waitForTransaction({ digest });
-    return response.digest;
+    return digest;
   }
 
   public async withdrawAsset(coinType: string) {
@@ -124,7 +121,7 @@ export class SuilendService
     }
 
     await this.suilendClient.withdrawAndSendToUser(
-      this.agent.wallet.toSuiAddress(),
+      this.agent.wallet.publicKey.toSuiAddress(),
       obligationOwnerCapId,
       obligationId,
       coinType,
@@ -132,12 +129,9 @@ export class SuilendService
       transaction,
     );
 
-    const { digest } = await this.agent.client.signAndExecuteTransaction({
-      transaction,
-      signer: this.agent.wallet,
-    });
-    const response = await this.agent.client.waitForTransaction({ digest });
-    return response.digest;
+    const { digest } =
+      await this.agent.wallet.signAndSendTransaction(transaction);
+    return digest;
   }
 
   public async getReserves() {
@@ -174,7 +168,7 @@ export class SuilendService
       this.suilendClient,
       config.refreshedRawReserves,
       config.reserveMap,
-      this.agent.wallet.getPublicKey().toSuiAddress(),
+      this.agent.wallet.publicKey.toSuiAddress(),
     );
     return obligations[0].deposits.map((deposit) => {
       return {
@@ -254,14 +248,15 @@ export class SuilendService
       }));
 
     this.suilendClient.claimRewardsAndSendToUser(
-      this.agent.wallet.toSuiAddress(),
+      this.agent.wallet.publicKey.toSuiAddress(),
       obligationOwnerCap.id,
       rewards,
       transaction,
     );
 
-    const tx = await this.agent.signExecuteAndWaitForTransaction(transaction);
-    return tx;
+    const { digest } =
+      await this.agent.wallet.signAndSendTransaction(transaction);
+    return digest;
   }
 
   private async fetchConfiguration() {
@@ -302,7 +297,7 @@ export class SuilendService
       this.suilendClient,
       config.refreshedRawReserves,
       config.reserveMap,
-      this.agent.wallet.getPublicKey().toSuiAddress(),
+      this.agent.wallet.publicKey.toSuiAddress(),
     );
     const rewardMap = formatRewards(
       config.reserveMap,

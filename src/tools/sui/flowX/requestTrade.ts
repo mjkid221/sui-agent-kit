@@ -16,17 +16,19 @@ export const requestTrade = async (
   inputCoinType: string = COMMON_TOKEN_TYPES.USDC,
   slippageBps: number = DEFAULT_OPTIONS.SLIPPAGE_BPS,
 ) => {
-  const quoter = new AggregatorQuoter(agent.agentNetwork);
+  const quoter = new AggregatorQuoter(agent.config.rpc.network);
   const inputCoinDecimals = await getCoinDecimals(agent, inputCoinType);
 
   const formattedInputAmount = inputAmount * 10 ** inputCoinDecimals;
-  const feeCommission = agent.config.tradeCommissionFeePercentage
+  const feeCommission = agent.config.commission?.tradeCommissionFeePercentage
     ? new Commission(
-        agent.config.treasury,
+        agent.config.commission.treasury,
         new Coin(inputCoinType),
         CommissionType.PERCENTAGE,
         // Convert percentage to bps for FlowX
-        (agent.config.tradeCommissionFeePercentage * 10_000).toString(),
+        (
+          agent.config.commission.tradeCommissionFeePercentage * 10_000
+        ).toString(),
       )
     : undefined;
   const { routes, amountIn, amountOut } = await quoter.getRoutes({
@@ -36,31 +38,23 @@ export const requestTrade = async (
     ...(feeCommission ? { commission: feeCommission } : {}),
   });
 
-  const tradeBuilder = new TradeBuilder(agent.agentNetwork, routes);
+  const tradeBuilder = new TradeBuilder(agent.config.rpc.network, routes);
   const tradeInstructions = tradeBuilder
     .amountIn(amountIn)
     .amountOut(amountOut)
     .slippage(slippageBps)
-    .sender(agent.wallet.toSuiAddress())
+    .sender(agent.wallet.publicKey.toSuiAddress())
     .deadline(Date.now() + 3600); // 1 hour from now
 
   const trade = feeCommission
     ? tradeInstructions
-        .sender(agent.wallet.toSuiAddress())
+        .sender(agent.wallet.publicKey.toSuiAddress())
         .commission(feeCommission)
         .build()
-    : tradeInstructions.sender(agent.wallet.toSuiAddress()).build();
+    : tradeInstructions.sender(agent.wallet.publicKey.toSuiAddress()).build();
 
   const tx = await trade.buildTransaction({ client: agent.client });
 
-  const { digest } = await agent.client.signAndExecuteTransaction({
-    signer: agent.wallet,
-    transaction: tx,
-  });
-
-  const response = await agent.client.waitForTransaction({
-    digest,
-  });
-
-  return response.digest;
+  const { digest } = await agent.wallet.signAndSendTransaction(tx);
+  return digest;
 };

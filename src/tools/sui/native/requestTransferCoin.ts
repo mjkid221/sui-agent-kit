@@ -12,7 +12,7 @@ export const requestTransferCoin = async (
     const tx = new Transaction();
 
     const coins = await agent.client.getCoins({
-      owner: agent.wallet.getPublicKey().toSuiAddress(),
+      owner: agent.wallet.publicKey.toSuiAddress(),
       coinType,
     });
 
@@ -23,12 +23,8 @@ export const requestTransferCoin = async (
     );
     tx.transferObjects([coin], tx.pure.address(to));
 
-    const result = await agent.client.signAndExecuteTransaction({
-      signer: agent.wallet,
-      transaction: tx,
-    });
-    await agent.client.waitForTransaction({ digest: result.digest });
-    return result.digest;
+    const { digest } = await agent.wallet.signAndSendTransaction(tx);
+    return digest;
   } catch (error: any) {
     throw new Error(`Transfer failed: ${error.message}`);
   }

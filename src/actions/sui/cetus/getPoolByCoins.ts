@@ -4,7 +4,7 @@ import { createActionBuilderFor } from "../createAction";
 
 const schema = z.object({
   coinTypeA: z.string(),
-  coinTypeB: z.string().optional(),
+  coinTypeB: z.string(),
   feeTierFilter: z
     .union([
       z.literal(1),

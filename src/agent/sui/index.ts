@@ -1,5 +1,4 @@
-import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
-import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
+import { SuiClient } from "@mysten/sui/client";
 import {
   SuinsClient,
   requestFaucetFunds,
@@ -12,7 +11,6 @@ import {
   type TokenCreationInterface,
 } from "@/tools/sui";
 import { SuiAgentConfig, SuiAgentKitClass } from "@/types/agent";
-import { FALLBACK_FEE_TREASURY_ADDRESS } from "@/constants/sui";
 import {
   getTokenAddressFromTicker,
   getTokenDataByAddress,
@@ -34,47 +32,29 @@ import { ms } from "ms-extended";
 import { CetusPoolManager } from "@/tools/sui/cetus";
 import { CETUS_FEE_TIERS } from "@/tools/sui/cetus/fees";
 import { SuilendService } from "@/tools/sui/suilend";
-import { Transaction } from "@mysten/sui/transactions";
+import { SuiWallet } from "@/types/wallet/SuiWallet";
 
 export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
-  public wallet: Ed25519Keypair;
   public client: SuiClient;
   public suinsClient: SuinsClient;
-  public agentNetwork: "testnet" | "mainnet";
-  public config: SuiAgentConfig & {
-    treasury: string;
-  };
   public cetusPoolManager: CetusPoolManager;
   public suilendService: SuilendService;
 
-  constructor({
-    ed25519PrivateKey,
-    rpcUrl,
-    agentNetwork = "mainnet",
-    config,
-  }: {
-    ed25519PrivateKey: string;
-    rpcUrl?: string;
-    agentNetwork: "testnet" | "mainnet";
-    config: SuiAgentConfig;
-  }) {
+  constructor(
+    readonly wallet: SuiWallet,
+    readonly config: SuiAgentConfig,
+  ) {
     super(config.cache);
-    const rpc = rpcUrl ?? getFullnodeUrl(agentNetwork);
+    const { url, network } = config.rpc;
     this.client = new SuiClient({
-      url: rpc,
+      url,
     });
-    this.wallet = Ed25519Keypair.fromSecretKey(ed25519PrivateKey);
-    this.agentNetwork = agentNetwork;
-    this.config = {
-      ...config,
-      treasury: config.treasury ?? FALLBACK_FEE_TREASURY_ADDRESS,
-    };
     // Cetus SDK setup
-    this.cetusPoolManager = new CetusPoolManager(this, agentNetwork, rpc);
+    this.cetusPoolManager = new CetusPoolManager(this, network, url);
     // Sui NS setup
     this.suinsClient = new SuinsClient({
       client: this.client,
-      network: agentNetwork,
+      network,
     });
     // Suilend Service setup
     this.suilendService = new SuilendService(this);
@@ -85,7 +65,7 @@ export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
   }
 
   async requestAgentWalletAddress() {
-    return this.wallet.toSuiAddress();
+    return this.wallet.publicKey.toSuiAddress();
   }
 
   async requestGetBalance(coinType?: string, walletAddress?: string) {
@@ -238,16 +218,5 @@ export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
 
   async requestClaimAllRewardsSuilend() {
     return this.suilendService.claimAllRewards();
-  }
-
-  async signExecuteAndWaitForTransaction(
-    transaction: Uint8Array | Transaction,
-  ) {
-    const { digest } = await this.client.signAndExecuteTransaction({
-      transaction,
-      signer: this.wallet,
-    });
-    const response = await this.client.waitForTransaction({ digest });
-    return response.digest;
   }
 }

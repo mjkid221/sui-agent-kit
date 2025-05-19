@@ -2,25 +2,33 @@ import { TokenCreationInterface } from "@/tools/sui/native/requestDeployCoin/typ
 import { BaseAgentKitClass } from "./BaseAgentKitClass";
 import { SuinsClient } from "@/tools/sui";
 import { SuiClient } from "@mysten/sui/client";
-import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { CacheStoreConfig } from "@/lib/classes/cache/types";
-import { Transaction } from "@mysten/sui/dist/cjs/transactions";
 
 export type SuiAgentConfig = {
   /**
-   * The fixed fee for deploying a coin. E.g. 0.5 for 0.5 SUI
+   * Network configuration
+   * @property {string} url - The RPC URL to use
+   * @property {string} network - The environment to use. E.g. "testnet" or "mainnet"
    */
-  coinDeployFixedFee?: number;
+  rpc: {
+    url: string;
+    network: "testnet" | "mainnet";
+  };
 
-  /**
-   * The percentage fee for each trade. E.g. 1 for 1%
-   */
-  tradeCommissionFeePercentage?: number;
-
-  /**
-   * Treasury address for commissions/fees
-   */
-  treasury?: string;
+  commission?: {
+    /**
+     * The percentage fee for each trade. E.g. 1 for 1%
+     */
+    tradeCommissionFeePercentage: number;
+    /**
+     * The fixed fee for deploying a coin. E.g. 0.5 for 0.5 SUI
+     */
+    coinDeployFixedFee: number;
+    /**
+     * The treasury address for commissions/fees
+     */
+    treasury: string;
+  };
 
   /**
    * Cache configuration for the agent. Leave empty to use default in-memory caching.
@@ -69,10 +77,8 @@ export type SuiAgentConfig = {
 };
 
 export interface SuiAgentKitClass extends BaseAgentKitClass {
-  wallet: Ed25519Keypair;
   client: SuiClient;
   suinsClient: SuinsClient;
-  agentNetwork: "testnet" | "mainnet";
   config: SuiAgentConfig;
 
   /**
@@ -95,11 +101,4 @@ export interface SuiAgentKitClass extends BaseAgentKitClass {
       fee: number;
     },
   ): Promise<string>;
-
-  /**
-   * Sign and execute a transaction and wait for it to be confirmed
-   * @param transaction - The transaction to sign and execute
-   * @returns The digest of the transaction (txhash)
-   */
-  signExecuteAndWaitForTransaction(transaction: Transaction): Promise<string>;
 }
