@@ -1,9 +1,6 @@
 import { SuiWallet } from "@/types/wallet/SuiWallet";
 import { Ed25519Keypair, Ed25519PublicKey } from "@mysten/sui/keypairs/ed25519";
-import {
-  SuiClient,
-  SuiTransactionBlockResponseOptions,
-} from "@mysten/sui/client";
+import { SuiClient } from "@mysten/sui/client";
 import { Transaction } from "@mysten/sui/transactions";
 
 type BaseConfig = {
