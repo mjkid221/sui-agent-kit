@@ -12,6 +12,7 @@ import { SuiKeypairWallet } from "@/lib/utils/keypairs/SuiKeypairWallet";
 import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { getFullnodeUrl } from "@mysten/sui/client";
 import { createLangchainTools } from "@/langchain";
+import { getDefaultPlugins, registerPlugins } from "@/plugins";
 
 dotenv.config();
 const env = getEnv();
@@ -54,8 +55,11 @@ async function initializeAgent() {
     );
 
     // TODO: add tools
+    await registerPlugins(suiAgent, getDefaultPlugins());
     // Create Sui-specific tools
-    const tools = createLangchainTools<SuiAgentKit>(suiAgent, []);
+    const tools = createLangchainTools<SuiAgentKit>(suiAgent, [
+      ...suiAgent.getActions(),
+    ]);
 
     // Create an LLM Chain
     const llm = new ChatOpenAI({

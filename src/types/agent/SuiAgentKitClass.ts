@@ -5,6 +5,8 @@ import { BaseAgentKitClass } from "./BaseAgentKitClass";
 import { SuiWallet } from "../wallet/SuiWallet";
 import { CetusPoolManager } from "@/tools/sui/cetus";
 import { SuilendService } from "@/tools/sui/suilend";
+import { Action } from "../action";
+import { Plugin } from "../plugin";
 
 export type SuiAgentConfig = {
   /**
@@ -87,4 +89,41 @@ export interface SuiAgentKitClass extends BaseAgentKitClass<SuiWallet> {
   cetusPoolManager: CetusPoolManager;
   suilendService: SuilendService;
   config: SuiAgentConfig;
+
+  /**
+   * Registered plugins
+   */
+  plugins: Map<string, Plugin<SuiAgentKitClass>>;
+
+  /**
+   * All actions registered from plugins
+   */
+  actions: Map<string, Action<SuiAgentKitClass>>;
+
+  /**
+   * Register a plugin
+   * @param plugin Plugin to register
+   */
+  registerPlugin(plugin: Plugin<SuiAgentKitClass>): Promise<void>;
+
+  /**
+   * Get an action by name
+   * @param actionName Name of the action to get
+   */
+  getAction(actionName: string): Action<SuiAgentKitClass> | undefined;
+
+  /**
+   * Get all actions
+   */
+  getActions(): Action<SuiAgentKitClass>[];
+
+  /**
+   * Execute an action by name with the given input
+   * @param actionName Name of the action to execute
+   * @param input Input for the action
+   */
+  executeAction(
+    actionName: string,
+    input?: Record<string, unknown>,
+  ): Promise<Record<string, unknown>>;
 }
