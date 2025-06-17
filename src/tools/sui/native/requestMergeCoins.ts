@@ -17,7 +17,7 @@ export const requestMergeCoins = async (
   coinType: string = SUI_TYPE_ARG,
 ) => {
   const coins = await agent.client.getCoins({
-    owner: agent.wallet.getPublicKey().toSuiAddress(),
+    owner: agent.wallet.publicKey.toSuiAddress(),
     coinType,
   });
 

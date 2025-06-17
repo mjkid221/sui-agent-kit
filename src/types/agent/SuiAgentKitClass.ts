@@ -1,26 +1,38 @@
-import { TokenCreationInterface } from "@/tools/sui/native/requestDeployCoin/types";
-import { BaseAgentKitClass } from "./BaseAgentKitClass";
 import { SuinsClient } from "@/tools/sui";
 import { SuiClient } from "@mysten/sui/client";
-import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
 import { CacheStoreConfig } from "@/lib/classes/cache/types";
-import { Transaction } from "@mysten/sui/dist/cjs/transactions";
+import { BaseAgentKitClass } from "./BaseAgentKitClass";
+import { SuiWallet } from "../wallet/SuiWallet";
+import { CetusPoolManager } from "@/tools/sui/cetus";
+import { SuilendService } from "@/tools/sui/suilend";
+import { Action } from "../action";
+import { Plugin } from "../plugin";
 
 export type SuiAgentConfig = {
   /**
-   * The fixed fee for deploying a coin. E.g. 0.5 for 0.5 SUI
+   * Network configuration
+   * @property {string} url - The RPC URL to use
+   * @property {string} network - The environment to use. E.g. "testnet" or "mainnet"
    */
-  coinDeployFixedFee?: number;
+  rpc: {
+    url: string;
+    network: "testnet" | "mainnet";
+  };
 
-  /**
-   * The percentage fee for each trade. E.g. 1 for 1%
-   */
-  tradeCommissionFeePercentage?: number;
-
-  /**
-   * Treasury address for commissions/fees
-   */
-  treasury?: string;
+  commission?: {
+    /**
+     * The percentage fee for each trade. E.g. 1 for 1%
+     */
+    tradeCommissionFeePercentage: number;
+    /**
+     * The fixed fee for deploying a coin. E.g. 0.5 for 0.5 SUI
+     */
+    coinDeployFixedFee: number;
+    /**
+     * The treasury address for commissions/fees
+     */
+    treasury: string;
+  };
 
   /**
    * Cache configuration for the agent. Leave empty to use default in-memory caching.
@@ -68,38 +80,50 @@ export type SuiAgentConfig = {
   cache?: CacheStoreConfig;
 };
 
-export interface SuiAgentKitClass extends BaseAgentKitClass {
-  wallet: Ed25519Keypair;
+/**
+ * Sui-specific implementation of the agent kit
+ */
+export interface SuiAgentKitClass extends BaseAgentKitClass<SuiWallet> {
   client: SuiClient;
   suinsClient: SuinsClient;
-  agentNetwork: "testnet" | "mainnet";
+  cetusPoolManager: CetusPoolManager;
+  suilendService: SuilendService;
   config: SuiAgentConfig;
 
   /**
-   * @param tokenInfo - The information of the token to be deployed
-   * @param tokenInfo.name - The name of the token
-   * @param tokenInfo.symbol - The symbol of the token
-   * @param tokenInfo.decimals - The decimals of the token
-   * @param tokenInfo.totalSupply - The total supply of the token. E.g. 1_000_000_000 for 1B
-   * @param tokenInfo.fixedSupply - Whether the token is fixed supply
-   * @param tokenInfo.description - The description of the token
-   * @param feeConfig - Optional configuration for fees
-   * @param feeConfig.treasury - The address of the treasury
-   * @param feeConfig.fee - The fee of the transaction. E.g. 1_000_000_000 for 1 SUI
-   * @returns The module address
+   * Registered plugins
    */
-  requestDeployCoin(
-    tokenInfo: TokenCreationInterface,
-    feeConfig?: {
-      treasury: string;
-      fee: number;
-    },
-  ): Promise<string>;
+  plugins: Map<string, Plugin<SuiAgentKitClass>>;
 
   /**
-   * Sign and execute a transaction and wait for it to be confirmed
-   * @param transaction - The transaction to sign and execute
-   * @returns The digest of the transaction (txhash)
+   * All actions registered from plugins
    */
-  signExecuteAndWaitForTransaction(transaction: Transaction): Promise<string>;
+  actions: Map<string, Action<SuiAgentKitClass>>;
+
+  /**
+   * Register a plugin
+   * @param plugin Plugin to register
+   */
+  registerPlugin(plugin: Plugin<SuiAgentKitClass>): Promise<void>;
+
+  /**
+   * Get an action by name
+   * @param actionName Name of the action to get
+   */
+  getAction(actionName: string): Action<SuiAgentKitClass> | undefined;
+
+  /**
+   * Get all actions
+   */
+  getActions(): Action<SuiAgentKitClass>[];
+
+  /**
+   * Execute an action by name with the given input
+   * @param actionName Name of the action to execute
+   * @param input Input for the action
+   */
+  executeAction(
+    actionName: string,
+    input?: Record<string, unknown>,
+  ): Promise<Record<string, unknown>>;
 }

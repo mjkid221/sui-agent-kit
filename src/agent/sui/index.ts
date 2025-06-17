@@ -1,253 +1,112 @@
-import { getFullnodeUrl, SuiClient } from "@mysten/sui/client";
-import { Ed25519Keypair } from "@mysten/sui/keypairs/ed25519";
-import {
-  SuinsClient,
-  requestFaucetFunds,
-  requestCoinBalance,
-  requestTransferCoin,
-  requestRegisterDomain,
-  requestResolveDomain,
-  requestTrade,
-  requestDeployCoin,
-  type TokenCreationInterface,
-} from "@/tools/sui";
+import { SuiClient } from "@mysten/sui/client";
+import { SuinsClient } from "@/tools/sui";
 import { SuiAgentConfig, SuiAgentKitClass } from "@/types/agent";
-import { FALLBACK_FEE_TREASURY_ADDRESS } from "@/constants/sui";
-import {
-  getTokenAddressFromTicker,
-  getTokenDataByAddress,
-  getTokenDataByTicker,
-  getTokenPriceByAddress,
-} from "@/lib/helpers/token";
-import { ChainIdentifier } from "@/types/chain";
-import { BaseAgentStore } from "@/lib/classes";
-import {
-  createTokenAddressFromTickerCacheKey,
-  createTokenDataByAddressCacheKey,
-  createTokenDataByTickerCacheKey,
-  createTokenDecimalsCacheKey,
-  createTokenPriceCacheKey,
-} from "@/lib/helpers/cache";
-import { getCoinDecimals } from "@/tools/sui/native/requestCoinBalance/getCoinDecimals";
-import { SUI_TYPE_ARG } from "@mysten/sui/utils";
-import { ms } from "ms-extended";
 import { CetusPoolManager } from "@/tools/sui/cetus";
-import { CETUS_FEE_TIERS } from "@/tools/sui/cetus/fees";
 import { SuilendService } from "@/tools/sui/suilend";
-import { Transaction } from "@mysten/sui/transactions";
+import { SuiWallet } from "@/types/wallet/SuiWallet";
+import { Action } from "@/types/action";
+import { Plugin } from "@/types/plugin";
 
-export class SuiAgentKit extends BaseAgentStore implements SuiAgentKitClass {
-  public wallet: Ed25519Keypair;
+export class SuiAgentKit implements SuiAgentKitClass {
   public client: SuiClient;
   public suinsClient: SuinsClient;
-  public agentNetwork: "testnet" | "mainnet";
-  public config: SuiAgentConfig & {
-    treasury: string;
-  };
   public cetusPoolManager: CetusPoolManager;
   public suilendService: SuilendService;
+  public plugins: Map<string, Plugin<SuiAgentKitClass>> = new Map();
+  public actions: Map<string, Action<SuiAgentKitClass>> = new Map();
 
-  constructor({
-    ed25519PrivateKey,
-    rpcUrl,
-    agentNetwork = "mainnet",
-    config,
-  }: {
-    ed25519PrivateKey: string;
-    rpcUrl?: string;
-    agentNetwork: "testnet" | "mainnet";
-    config: SuiAgentConfig;
-  }) {
-    super(config.cache);
-    const rpc = rpcUrl ?? getFullnodeUrl(agentNetwork);
+  constructor(
+    readonly wallet: SuiWallet,
+    readonly config: SuiAgentConfig,
+  ) {
+    // super(config.cache);
+    const { url, network } = config.rpc;
     this.client = new SuiClient({
-      url: rpc,
+      url,
     });
-    this.wallet = Ed25519Keypair.fromSecretKey(ed25519PrivateKey);
-    this.agentNetwork = agentNetwork;
-    this.config = {
-      ...config,
-      treasury: config.treasury ?? FALLBACK_FEE_TREASURY_ADDRESS,
-    };
     // Cetus SDK setup
-    this.cetusPoolManager = new CetusPoolManager(this, agentNetwork, rpc);
+    this.cetusPoolManager = new CetusPoolManager(this, network, url);
     // Sui NS setup
     this.suinsClient = new SuinsClient({
       client: this.client,
-      network: agentNetwork,
+      network,
     });
     // Suilend Service setup
     this.suilendService = new SuilendService(this);
   }
 
-  async requestFaucetFunds() {
-    return requestFaucetFunds(this);
+  /**
+   * Register a plugin with the agent
+   * @param plugin Plugin to register
+   */
+  public async registerPlugin(plugin: Plugin<SuiAgentKitClass>): Promise<void> {
+    // Check if the plugin is already registered
+    if (this.plugins.has(plugin.name)) {
+      throw new Error(`Plugin '${plugin.name}' is already registered`);
+    }
+
+    // Register the plugin
+    this.plugins.set(plugin.name, plugin);
+
+    // Register the plugin's actions
+    for (const action of plugin.actions) {
+      if (this.actions.has(action.name)) {
+        console.warn(
+          `Action '${action.name}' is already registered. Overwriting...`,
+        );
+      }
+      this.actions.set(action.name, action);
+    }
+
+    // Initialize the plugin if it has an init method
+    if (plugin.init) {
+      await plugin.init(this);
+    }
   }
 
-  async requestAgentWalletAddress() {
-    return this.wallet.toSuiAddress();
+  /**
+   * Get an action by name
+   * @param actionName Name of the action to get
+   */
+  public getAction(actionName: string): Action<SuiAgentKitClass> | undefined {
+    return this.actions.get(actionName);
   }
 
-  async requestGetBalance(coinType?: string, walletAddress?: string) {
-    return requestCoinBalance(this, coinType, walletAddress);
+  /**
+   * Execute an action by name with the given input
+   * @param actionName Name of the action to execute
+   * @param input Input for the action
+   */
+  public async executeAction(
+    actionName: string,
+    input?: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    const action = this.getAction(actionName);
+
+    if (!action) {
+      throw new Error(`Action '${actionName}' not found`);
+    }
+
+    // Validate input against schema if provided
+    if (action.schema && input) {
+      const result = action.schema.safeParse(input);
+      if (!result.success) {
+        throw new Error(
+          `Invalid input for action '${actionName}': ${result.error.message}`,
+        );
+      }
+    }
+
+    // Execute the action
+    // @ts-ignore - The handler type is complex due to conditional typing, but this is safe
+    return action.handler(this, input);
   }
 
-  async requestGetCoinDecimals(coinType?: string) {
-    return this.cache.withCache(
-      createTokenDecimalsCacheKey(coinType ?? SUI_TYPE_ARG),
-      () => getCoinDecimals(this, coinType),
-    );
-  }
-
-  async requestDeployCoin(tokenInfo: TokenCreationInterface) {
-    return requestDeployCoin(this, tokenInfo);
-  }
-
-  async requestTransferCoinOrToken(
-    amount: number,
-    to: string,
-    coinType?: string,
-  ) {
-    return requestTransferCoin(this, to, amount, coinType);
-  }
-
-  async requestRegisterDomain(name: string, years: number) {
-    return requestRegisterDomain(this, name, years);
-  }
-
-  async requestResolveDomain(domain: string) {
-    return requestResolveDomain(this, domain);
-  }
-
-  async requestTrade(
-    outputCoinType: string,
-    inputAmount: number,
-    inputCoinType?: string,
-    slippageBps?: number,
-  ) {
-    return requestTrade(
-      this,
-      outputCoinType,
-      inputAmount,
-      inputCoinType,
-      slippageBps,
-    );
-  }
-
-  async requestCreateClmmPoolCetus(
-    coinTypeA: string,
-    coinTypeADepositAmount: number,
-    coinTypeB: string,
-    initialPrice: number,
-    feeTier: keyof typeof CETUS_FEE_TIERS,
-    slippagePercentage: number,
-  ) {
-    return this.cetusPoolManager.createClmmPool(
-      coinTypeA,
-      coinTypeADepositAmount,
-      coinTypeB,
-      initialPrice,
-      feeTier,
-      slippagePercentage,
-    );
-  }
-
-  async requestGetAllPoolPositionsCetus() {
-    return this.cetusPoolManager.getPoolPositions();
-  }
-
-  async requestGetPoolByCoinsCetus(
-    coinTypeA: string,
-    coinTypeB: string,
-    feeTier?: keyof typeof CETUS_FEE_TIERS,
-  ) {
-    return this.cetusPoolManager.getPoolByCoins(coinTypeA, coinTypeB, feeTier);
-  }
-
-  async requestOpenPoolPositionCetus(
-    poolId: string,
-    coinTypeA: string,
-    amountA: number,
-    slippagePercentage: number,
-    existingPositionId?: string,
-  ) {
-    return this.cetusPoolManager.openPositionAndAddLiquidity(
-      poolId,
-      coinTypeA,
-      amountA,
-      slippagePercentage,
-      existingPositionId,
-    );
-  }
-
-  async requestClosePoolPositionCetus(positionId: string) {
-    return this.cetusPoolManager.closePoolPosition(positionId);
-  }
-
-  async requestAssetDataByCoinType(coinType: string) {
-    return this.cache.withCache(
-      createTokenDataByAddressCacheKey(coinType, ChainIdentifier.SUI),
-      () => getTokenDataByAddress(coinType, ChainIdentifier.SUI),
-      ms("5m"),
-    );
-  }
-
-  async getAssetAddressFromTicker(ticker: string) {
-    return this.cache.withCache(
-      createTokenAddressFromTickerCacheKey(ticker, ChainIdentifier.SUI),
-      () => getTokenAddressFromTicker(ticker, ChainIdentifier.SUI),
-      ms("5m"),
-    );
-  }
-
-  async requestAssetDataByTicker(ticker: string) {
-    return this.cache.withCache(
-      createTokenDataByTickerCacheKey(ticker, ChainIdentifier.SUI),
-      () => getTokenDataByTicker(ticker, ChainIdentifier.SUI),
-      ms("5m"),
-    );
-  }
-
-  async requestGetAssetPrice(coinType: string) {
-    return this.cache.withCache(
-      createTokenPriceCacheKey(coinType, ChainIdentifier.SUI),
-      () => getTokenPriceByAddress(coinType, ChainIdentifier.SUI),
-      ms("5m"),
-    );
-  }
-
-  async requestLendAssetSuilend(amount: number, coinType: string) {
-    return this.suilendService.depositAsset(amount, coinType);
-  }
-
-  async requestSuilendReserves() {
-    return this.suilendService.getReserves();
-  }
-
-  async requestWithdrawLendedAssetSuilend(coinType: string) {
-    return this.suilendService.withdrawAsset(coinType);
-  }
-
-  async requestGetCurrentLendedAssetsSuilend() {
-    return this.suilendService.getDeposits();
-  }
-
-  async requestGetRewardsSuilend() {
-    return (await this.suilendService.getRewards()).availableRewards;
-  }
-
-  async requestClaimAllRewardsSuilend() {
-    return this.suilendService.claimAllRewards();
-  }
-
-  async signExecuteAndWaitForTransaction(
-    transaction: Uint8Array | Transaction,
-  ) {
-    const { digest } = await this.client.signAndExecuteTransaction({
-      transaction,
-      signer: this.wallet,
-    });
-    const response = await this.client.waitForTransaction({ digest });
-    return response.digest;
+  /**
+   * Get all registered actions as an array
+   * @returns Array of all actions registered with the agent
+   */
+  public getActions(): Action<SuiAgentKitClass>[] {
+    return Array.from(this.actions.values());
   }
 }

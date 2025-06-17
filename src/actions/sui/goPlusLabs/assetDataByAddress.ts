@@ -1,0 +1,80 @@
+import { SuiAgentKit } from "@/agent/sui";
+import { z } from "zod";
+import { createActionBuilderFor } from "../createAction";
+import { formatGoPlusLabsSuiTokenData } from "@/tools/sui/goPlusLabs";
+import { getTokenDataByAddress } from "@/lib/helpers/token";
+import { ChainIdentifier } from "@/types/chain";
+
+const schema = z.object({
+  coinType: z.string(),
+});
+
+const assetDataByAddressAction = createActionBuilderFor(SuiAgentKit)
+  .name("ASSET_DATA_BY_ADDRESS_ACTION")
+  .similes([
+    "get token data",
+    "check token info",
+    "view token details",
+    "get coin data",
+    "check coin info",
+    "get asset details",
+  ])
+  .description(`Get the token data for a given coin type address`)
+  .examples([
+    [
+      {
+        input: {
+          coinType:
+            "0x76cb819b01abed502bee8a702b4c2d547532c12f25001c9dea795a5e631c26f1::fud::FUD",
+        },
+        output: {
+          status: "success",
+          message: "Asset data fetched successfully",
+          assetData: {
+            name: "FUD Token",
+            symbol: "FUD",
+            decimals: 6,
+            totalSupply: "1000000000000",
+            owner:
+              "0x76cb819b01abed502bee8a702b4c2d547532c12f25001c9dea795a5e631c26f1",
+            isVerified: true,
+          },
+        },
+        explanation: "Get detailed information about the FUD token",
+      },
+    ],
+    [
+      {
+        input: {
+          coinType: "0x2::sui::SUI",
+        },
+        output: {
+          status: "success",
+          message: "Asset data fetched successfully",
+          assetData: {
+            name: "Sui",
+            symbol: "SUI",
+            decimals: 9,
+            totalSupply: null,
+            owner: null,
+            isVerified: true,
+          },
+        },
+        explanation: "Get detailed information about the SUI token",
+      },
+    ],
+  ])
+  .schema(schema)
+  .handler(async (agent, input) => {
+    const formattedAssetData = formatGoPlusLabsSuiTokenData(
+      await getTokenDataByAddress(input.coinType, ChainIdentifier.SUI),
+    );
+
+    return {
+      status: "success",
+      message: "Asset data fetched successfully",
+      assetData: formattedAssetData,
+    };
+  });
+
+export default assetDataByAddressAction;

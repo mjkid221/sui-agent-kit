@@ -10,14 +10,8 @@ export const createClmmPool = async (
       params,
     );
 
-  const { digest } = await agent.client.signAndExecuteTransaction({
-    transaction: creatPoolPayload,
-    signer: agent.wallet,
-  });
+  const { digest } =
+    await agent.wallet.signAndSendTransaction(creatPoolPayload);
 
-  const response = await agent.client.waitForTransaction({
-    digest,
-  });
-
-  return response.digest;
+  return digest;
 };

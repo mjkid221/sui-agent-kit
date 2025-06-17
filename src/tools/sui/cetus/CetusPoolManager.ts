@@ -34,15 +34,15 @@ export class CetusPoolManager extends BaseCacheStore {
   public readonly cetusSDK: CetusClmmSDK;
   constructor(
     public readonly agent: SuiAgentKit,
-    agentNetwork: "testnet" | "mainnet",
+    network: "testnet" | "mainnet",
     fullNodeUrl: string,
   ) {
     super();
     this.cetusSDK = initCetusSDK({
-      network: agentNetwork,
+      network,
       fullNodeUrl,
     });
-    this.cetusSDK.senderAddress = this.agent.wallet.toSuiAddress();
+    this.cetusSDK.senderAddress = this.agent.wallet.publicKey.toSuiAddress();
   }
 
   /**
@@ -121,7 +121,7 @@ export class CetusPoolManager extends BaseCacheStore {
    */
   getPoolPositions(): Promise<Position[]> {
     return this.cetusSDK.Position.getPositionList(
-      this.agent.wallet.toSuiAddress(),
+      this.agent.wallet.publicKey.toSuiAddress(),
     );
   }
 
@@ -202,7 +202,7 @@ export class CetusPoolManager extends BaseCacheStore {
         collect_fee: true,
       });
 
-    const digest = await this.agent.signExecuteAndWaitForTransaction(
+    const digest = await this.agent.wallet.signAndSendTransaction(
       closePositionTransactionPayload,
     );
     return digest;

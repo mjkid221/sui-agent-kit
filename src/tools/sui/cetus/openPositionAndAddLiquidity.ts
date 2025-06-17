@@ -15,14 +15,9 @@ export const openPositionAndAddLiquidity = async (
       },
     );
 
-  const { digest } = await agent.client.signAndExecuteTransaction({
-    transaction: createAddLiquidityTransactionPayload,
-    signer: agent.wallet,
-  });
+  const { digest } = await agent.wallet.signAndSendTransaction(
+    createAddLiquidityTransactionPayload,
+  );
 
-  const response = await agent.client.waitForTransaction({
-    digest,
-  });
-
-  return response.digest;
+  return digest;
 };

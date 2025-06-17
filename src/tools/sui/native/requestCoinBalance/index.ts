@@ -1,4 +1,5 @@
 import { SuiAgentKit } from "@/agent/sui";
+import { getCoinDecimals } from "./getCoinDecimals";
 
 export const requestCoinBalance = async (
   agent: SuiAgentKit,
@@ -6,10 +7,10 @@ export const requestCoinBalance = async (
   walletAddress?: string,
 ): Promise<number> => {
   const balance = await agent.client.getBalance({
-    owner: walletAddress ?? agent.wallet.toSuiAddress(),
+    owner: walletAddress ?? agent.wallet.publicKey.toSuiAddress(),
     coinType,
   });
 
-  const decimals = await agent.requestGetCoinDecimals(coinType);
+  const decimals = await getCoinDecimals(agent, coinType);
   return Number.parseInt(balance.totalBalance) / 10 ** decimals;
 };
